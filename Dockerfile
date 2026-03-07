@@ -1,4 +1,4 @@
-# Build stage
+# Build stage - Spring Boot pre-arrival checkin app
 FROM maven:3.9-eclipse-temurin-17-alpine AS build
 
 WORKDIR /app
