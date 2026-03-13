@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Further Details - Pre-Arrival Check-In</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --teal: #00bcd4;
+        }
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        .progress-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            border: 3px solid #e0e0e0;
+        }
+        .step.completed .step-circle {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+        .step.completed .step-circle::before {
+            content: "✓";
+        }
+        .step.active .step-circle {
+            background: var(--teal);
+            color: white;
+            border-color: var(--teal);
+        }
+        .step-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .step.active .step-label {
+            color: var(--teal);
+            font-weight: bold;
+        }
+        .step.completed .step-label {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .step-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: -1;
+        }
+        .step.completed .step-line {
+            background: #4caf50;
+        }
+        .step:last-child .step-line {
+            display: none;
+        }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .section-desc {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .form-group-custom {
+            margin-bottom: 30px;
+        }
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        .radio-option:hover, .checkbox-option:hover {
+            border-color: var(--teal);
+            background: #f0fdfe;
+        }
+        .radio-option input[type="radio"], .checkbox-option input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .radio-option input[type="radio"]:checked + label,
+        .checkbox-option input[type="checkbox"]:checked + label {
+            color: var(--teal);
+            font-weight: 600;
+        }
+        .radio-option input[type="radio"]:checked ~ label,
+        .checkbox-option input[type="checkbox"]:checked ~ label {
+            color: var(--teal);
+            font-weight: 600;
+        }
+        .radio-option:has(input[type="radio"]:checked),
+        .checkbox-option:has(input[type="checkbox"]:checked) {
+            border-color: var(--teal);
+            background: #f0fdfe;
+        }
+        .form-control-custom {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: all 0.3s;
+            resize: vertical;
+        }
+        .form-control-custom:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(0,188,212,0.1);
+            outline: none;
+        }
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        .accessibility-link {
+            color: var(--teal);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .accessibility-link:hover {
+            text-decoration: underline;
+        }
+        .accessibility-link i {
+            font-size: 18px;
+        }
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+        .btn-back:hover {
+            background: #5a6268;
+        }
+        .btn-continue {
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            float: right;
+        }
+        .btn-continue:hover {
+            background: #2a4a6f;
+        }
+        .btn-container {
+            clear: both;
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-custom">
+    <div class="container">
+        <a class="navbar-brand" href="#" style="color: var(--primary-color); font-weight: bold;">
+            <i class="fas fa-hotel"></i> reterra Property Tech
+        </a>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-steps">
+            <div class="step completed">
+                <div class="step-circle"></div>
+                <div class="step-label">Personal Information</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step active">
+                <div class="step-circle">2</div>
+                <div class="step-label">Further details</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <div class="step-label">EAT</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step">
+                <div class="step-circle">4</div>
+                <div class="step-label">Confirm information</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step">
+                <div class="step-circle">5</div>
+                <div class="step-label">Accept & Sign</div>
+                <div class="step-line"></div>
+            </div>
+            <div class="step">
+                <div class="step-circle">6</div>
+                <div class="step-label">Payment</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <form id="furtherDetailsForm" th:action="@{/checkin/further-details/submit}" method="post">
+        <input type="hidden" th:name="bookingReference" th:value="${bookingReference}">
+        <input type="hidden" th:name="bookingId" th:value="${bookingId}">
+        <input type="hidden" th:name="guestEmail" th:value="${guestEmail}">
+
+        <div class="form-container">
+            <h2 class="form-section-title">Further details</h2>
+            <p class="form-section-desc">Help us personalize your stay by sharing your preferences and needs.</p>
+
+            <!-- Purpose of Stay -->
+            <div class="form-group-custom">
+                <h3 class="section-title">Purpose of Stay</h3>
+                <p class="section-desc">Your preferences will be shared with our staff to enhance your comfort</p>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" name="purposeOfStay" id="purposeLeisure" value="Leisure" th:checked="${purposeOfStay == 'Leisure'}">
+                        <label for="purposeLeisure">Leisure</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="purposeOfStay" id="purposeReligious" value="Religious" th:checked="${purposeOfStay == 'Religious'}">
+                        <label for="purposeReligious">Religious</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="purposeOfStay" id="purposeBusiness" value="Business" th:checked="${purposeOfStay == 'Business'}">
+                        <label for="purposeBusiness">Business</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="purposeOfStay" id="purposeMedical" value="Medical" th:checked="${purposeOfStay == 'Medical'}">
+                        <label for="purposeMedical">Medical</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="purposeOfStay" id="purposeOther" value="Other" th:checked="${purposeOfStay == 'Other'}">
+                        <label for="purposeOther">Other</label>
+                    </div>
+                </div>
+                <textarea class="form-control form-control-custom" name="purposeOfStayOther"
+                          rows="3" maxlength="255"
+                          placeholder="Please state the Purpose for your stay."
+                          th:value="${purposeOfStayOther}"></textarea>
+                <div class="char-count"><span id="purposeCharCount">0</span>/255</div>
+            </div>
+
+            <!-- Eating Habits & Dietary Preferences -->
+            <div class="form-group-custom">
+                <h3 class="section-title">Eating Habits & Dietary Preferences</h3>
+                <p class="section-desc">This helps us prepare suitable options.</p>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="dietaryPreferences" id="dietVegetarian" value="Vegetarian" th:checked="${dietaryPreferences != null && dietaryPreferences.contains('Vegetarian')}">
+                        <label for="dietVegetarian">Vegetarian</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="dietaryPreferences" id="dietVegan" value="Vegan" th:checked="${dietaryPreferences != null && dietaryPreferences.contains('Vegan')}">
+                        <label for="dietVegan">Vegan</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="dietaryPreferences" id="dietHalal" value="Halal" th:checked="${dietaryPreferences != null && dietaryPreferences.contains('Halal')}">
+                        <label for="dietHalal">Halal</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="dietaryPreferences" id="dietNoPork" value="No Pork" th:checked="${dietaryPreferences != null && dietaryPreferences.contains('No Pork')}">
+                        <label for="dietNoPork">No Pork</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="dietaryPreferences" id="dietGlutenFree" value="Gluten-Free" th:checked="${dietaryPreferences != null && dietaryPreferences.contains('Gluten-Free')}">
+                        <label for="dietGlutenFree">Gluten-Free</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="dietaryPreferences" id="dietOther" value="Other" th:checked="${dietaryPreferences != null && dietaryPreferences.contains('Other')}">
+                        <label for="dietOther">Other</label>
+                    </div>
+                </div>
+                <textarea class="form-control form-control-custom" name="dietaryPreferencesOther"
+                          rows="3" maxlength="255"
+                          placeholder="Please mention your eating habits and dietary."
+                          th:value="${dietaryPreferencesOther}"></textarea>
+                <div class="char-count"><span id="dietCharCount">0</span>/255</div>
+            </div>
+
+            <!-- Allergies -->
+            <div class="form-group-custom">
+                <h3 class="section-title">Allergies</h3>
+                <p class="section-desc">Let us know about any food allergies to ensure your safety.</p>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="hasAllergies" id="hasAllergies" value="true" th:checked="${hasAllergies == true}">
+                        <label for="hasAllergies">I have allergies</label>
+                    </div>
+                </div>
+                <textarea class="form-control form-control-custom" name="allergiesDetails"
+                          rows="3" maxlength="255"
+                          placeholder="Please specify any allergies or special dietary requirements...."
+                          th:value="${allergiesDetails}"></textarea>
+                <div class="char-count"><span id="allergiesCharCount">0</span>/255</div>
+            </div>
+
+            <!-- Accessibility Needs -->
+            <div class="form-group-custom">
+                <h3 class="section-title">Accessibility Needs</h3>
+                <p class="section-desc">Let us know how we can make your stay more comfortable and accessible.</p>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="accessibilityNeeds" id="accWheelchair" value="Wheelchair Access" th:checked="${accessibilityNeeds != null && accessibilityNeeds.contains('Wheelchair Access')}">
+                        <label for="accWheelchair">Wheelchair Access</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="accessibilityNeeds" id="accVisual" value="Visual Assistance" th:checked="${accessibilityNeeds != null && accessibilityNeeds.contains('Visual Assistance')}">
+                        <label for="accVisual">Visual Assistance</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="accessibilityNeeds" id="accHearing" value="Hearing Assistance" th:checked="${accessibilityNeeds != null && accessibilityNeeds.contains('Hearing Assistance')}">
+                        <label for="accHearing">Hearing Assistance</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="accessibilityNeeds" id="accOther" value="Other" th:checked="${accessibilityNeeds != null && accessibilityNeeds.contains('Other')}">
+                        <label for="accOther">Other</label>
+                    </div>
+                </div>
+                <textarea class="form-control form-control-custom" name="accessibilityNeedsOther"
+                          rows="3" maxlength="255"
+                          placeholder="Please describe any additional accessibility requirements.."
+                          th:value="${accessibilityNeedsOther}"></textarea>
+                <div class="char-count"><span id="accCharCount">0</span>/255</div>
+                <a href="#" class="accessibility-link" onclick="openAccessibilityForm(); return false;">
+                    <i class="fas fa-globe"></i> Fill out full accessibility registration form
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="btn-container">
+            <button type="button" class="btn btn-back" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <button type="submit" class="btn btn-continue">
+                Continue <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Character counters
+    function updateCharCount(textareaId, countId) {
+        const textarea = document.querySelector(`textarea[name="${textareaId}"]`);
+        const countSpan = document.getElementById(countId);
+        if (textarea && countSpan) {
+            textarea.addEventListener('input', function() {
+                countSpan.textContent = this.value.length;
+            });
+            countSpan.textContent = textarea.value.length;
+        }
+    }
+
+    updateCharCount('purposeOfStayOther', 'purposeCharCount');
+    updateCharCount('dietaryPreferencesOther', 'dietCharCount');
+    updateCharCount('allergiesDetails', 'allergiesCharCount');
+    updateCharCount('accessibilityNeedsOther', 'accCharCount');
+
+    // Open accessibility form in new window/modal
+    function openAccessibilityForm() {
+        const bookingReference = document.querySelector('input[name="bookingReference"]').value;
+        const bookingId = document.querySelector('input[name="bookingId"]').value;
+        const guestEmail = document.querySelector('input[name="guestEmail"]').value;
+
+        const url = `/checkin/accessibility-form?bookingReference=${encodeURIComponent(bookingReference)}&bookingId=${encodeURIComponent(bookingId)}&guestEmail=${encodeURIComponent(guestEmail)}`;
+        window.open(url, 'AccessibilityForm', 'width=800,height=900,scrollbars=yes,resizable=yes');
+    }
+
+    // Handle message from accessibility form
+    window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'ACCESSIBILITY_FORM_SUBMITTED') {
+            // Reload page to refresh data
+            window.location.reload();
+        }
+    });
+
+    // Go back to previous page
+    function goBack() {
+        const bookingReference = document.querySelector('input[name="bookingReference"]').value;
+        const guestEmail = document.querySelector('input[name="guestEmail"]').value;
+        window.location.href = `/checkin/form?booking=${encodeURIComponent(bookingReference)}&email=${encodeURIComponent(guestEmail)}`;
+    }
+</script>
+</body>
+</html>
