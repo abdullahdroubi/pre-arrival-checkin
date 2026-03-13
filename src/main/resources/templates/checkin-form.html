@@ -233,7 +233,7 @@
     <!-- Guest Count Warning -->
     <div id="guestCountWarning" class="alert-guest-count" style="display: none;">
         <i class="fas fa-exclamation-triangle"></i>
-        <strong>Notice:</strong> You booked for <span th:text="${booking.numberOfGuests}">2</span> guest(s), but you're adding <span id="currentGuestCount">1</span> guest(s).
+        <strong>Notice:</strong> You booked for <span th:text="${booking.numberOfGuests != null ? booking.numberOfGuests : 1}">2</span> guest(s), but you're adding <span id="currentGuestCount">1</span> guest(s).
         Additional charges may apply for extra guests.
     </div>
 
@@ -242,7 +242,7 @@
         <input type="hidden" th:name="bookingReference" th:value="${booking.bookingReference}">
         <input type="hidden" th:name="bookingId" th:value="${booking.id}">
         <input type="hidden" th:name="guestEmail" th:value="${guestEmail}">
-        <input type="hidden" th:name="numberOfGuestsBooked" th:value="${booking.numberOfGuests}">
+            <input type="hidden" th:name="numberOfGuestsBooked" th:value="${booking.numberOfGuests != null ? booking.numberOfGuests : 1}">
 
         <!-- Personal Information Section -->
         <div class="form-container">
@@ -259,7 +259,7 @@
                             <i class="fas fa-user input-icon"></i>
                             <input type="text" class="form-control form-control-custom"
                                    th:name="guestFirstName"
-                                   th:value="${booking.guestFirstName + ' ' + booking.guestLastName}"
+                                   th:value="${guestFullName}"
                                    placeholder="Enter your full name" required>
                         </div>
                     </div>
@@ -299,7 +299,7 @@
                                 <i class="fas fa-phone input-icon"></i>
                                 <input type="tel" class="form-control form-control-custom"
                                        th:name="guestPhone"
-                                       th:value="${booking.guestPhone}"
+                                       th:value="${booking.guestPhone != null ? booking.guestPhone : ''}"
                                        placeholder="00 000 0000" required>
                             </div>
                         </div>
