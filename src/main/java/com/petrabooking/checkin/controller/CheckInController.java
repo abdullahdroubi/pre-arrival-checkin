@@ -113,6 +113,13 @@ public class CheckInController {
             guestName = "Guest";
         }
         model.addAttribute("guestFullName", guestName);
+        
+        // Ensure numberOfGuests is not null
+        Integer numberOfGuests = bookingData.getNumberOfGuests();
+        if (numberOfGuests == null || numberOfGuests < 1) {
+            numberOfGuests = 1;
+        }
+        model.addAttribute("numberOfGuests", numberOfGuests);
 
         return "checkin-form";
     }
