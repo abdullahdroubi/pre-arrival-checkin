@@ -362,8 +362,9 @@ public class CheckInController {
 
         session.setAttribute("furtherDetails_" + bookingId, data);
 
-        // Redirect to confirmation page
-        return "redirect:/checkin/confirmation?booking=" + bookingReference;
+        // Redirect to EAT (Estimated Arrival Time) page
+        return "redirect:/checkin/eat?bookingReference=" + bookingReference + 
+               "&bookingId=" + bookingId + "&guestEmail=" + guestEmail;
     }
 
     /**
@@ -459,5 +460,85 @@ public class CheckInController {
         response.put("message", "Accessibility form submitted successfully");
 
         return response;
+    }
+
+    /**
+     * Show EAT (Estimated Arrival Time) page
+     */
+    @GetMapping("/eat")
+    public String showEAT(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            HttpSession session,
+            Model model) {
+
+        System.out.println("[CHECKIN] /checkin/eat bookingReference=" + bookingReference);
+
+        // Get booking data to show check-in date
+        Booking bookingData = supabaseService.getBookingByReference(bookingReference);
+        if (bookingData == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+
+        // Format check-in date for display
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy");
+        String checkInDateFormatted = bookingData.getCheckInDate().format(formatter);
+        
+        // Load saved arrival time from session if available
+        Map<String, Object> savedData = (Map<String, Object>) session.getAttribute("eat_" + bookingId);
+        if (savedData != null) {
+            model.addAttribute("estimatedArrivalHour", savedData.get("arrivalHour"));
+            model.addAttribute("estimatedArrivalMinute", savedData.get("arrivalMinute"));
+            model.addAttribute("estimatedArrivalAMPM", savedData.get("arrivalAMPM"));
+        }
+
+        model.addAttribute("bookingReference", bookingReference);
+        model.addAttribute("bookingId", bookingId);
+        model.addAttribute("guestEmail", guestEmail);
+        model.addAttribute("checkInDate", bookingData.getCheckInDate().toString());
+        model.addAttribute("checkInDateFormatted", checkInDateFormatted);
+
+        return "eat";
+    }
+
+    /**
+     * Submit EAT (Estimated Arrival Time) form
+     */
+    @PostMapping("/eat/submit")
+    public String submitEAT(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            @RequestParam String checkInDate,
+            @RequestParam String arrivalHour,
+            @RequestParam String arrivalMinute,
+            @RequestParam String arrivalAMPM,
+            HttpSession session,
+            Model model) {
+
+        System.out.println("[CHECKIN] Submitting EAT for bookingId=" + bookingId + ", time=" + arrivalHour + ":" + arrivalMinute + " " + arrivalAMPM);
+
+        // Save to session for persistence
+        Map<String, Object> data = new HashMap<>();
+        data.put("arrivalHour", arrivalHour);
+        data.put("arrivalMinute", arrivalMinute);
+        data.put("arrivalAMPM", arrivalAMPM);
+        session.setAttribute("eat_" + bookingId, data);
+
+        // TODO: Save to database (pre_checkin_submissions table)
+        // Convert to 24-hour format for storage
+        int hour24 = Integer.parseInt(arrivalHour);
+        if (arrivalAMPM.equals("PM") && hour24 != 12) {
+            hour24 += 12;
+        } else if (arrivalAMPM.equals("AM") && hour24 == 12) {
+            hour24 = 0;
+        }
+        String arrivalTime24 = String.format("%02d:%02d", hour24, Integer.parseInt(arrivalMinute));
+        System.out.println("[CHECKIN] Arrival time (24h): " + arrivalTime24);
+
+        // Redirect to confirmation page
+        return "redirect:/checkin/confirmation?booking=" + bookingReference;
     }
 }

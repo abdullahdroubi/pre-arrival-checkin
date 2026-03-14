@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimated Arrival Time - Pre-Arrival Check-In</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --teal: #00bcd4;
+            --dark-blue: #1e3a5f;
+        }
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        .progress-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            border: 3px solid #e0e0e0;
+        }
+        .step.completed .step-circle {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+        .step.completed .step-circle::before {
+            content: "✓";
+        }
+        .step.active .step-circle {
+            background: var(--teal);
+            color: white;
+            border-color: var(--teal);
+        }
+        .step-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .step.active .step-label {
+            color: var(--teal);
+            font-weight: bold;
+        }
+        .step.completed .step-label {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .step-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: -1;
+        }
+        .step.completed .step-line {
+            background: #4caf50;
+        }
+        .step:last-child .step-line {
+            display: none;
+        }
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .section-desc {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .eat-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 768px) {
+            .eat-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        .date-section, .time-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        .section-label {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .calendar-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .calendar-month {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .calendar-nav {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #666;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .calendar-nav:hover {
+            color: var(--teal);
+        }
+        .calendar-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .calendar-weekday {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            padding: 8px;
+        }
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: default;
+            color: #999;
+        }
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+        .calendar-day.selected {
+            background: var(--dark-blue);
+            color: white;
+            font-weight: bold;
+        }
+        .calendar-day.today {
+            border: 2px solid var(--teal);
+        }
+        .time-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .time-digits {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--dark-blue);
+            margin-bottom: 15px;
+            font-variant-numeric: tabular-nums;
+        }
+        .time-separator {
+            margin: 0 5px;
+        }
+        .ampm-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .ampm-btn {
+            padding: 10px 30px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .ampm-btn.active {
+            background: var(--dark-blue);
+            color: white;
+            border-color: var(--dark-blue);
+        }
+        .clock-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+        .clock-face {
+            width: 100%;
+            height: 100%;
+            border: 3px solid var(--dark-blue);
+            border-radius: 50%;
+            position: relative;
+            background: white;
+        }
+        .clock-number {
+            position: absolute;
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+        .clock-number.active {
+            background: var(--dark-blue);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .clock-hand {
+            position: absolute;
+            background: var(--dark-blue);
+            transform-origin: bottom center;
+            border-radius: 2px;
+        }
+        .clock-hand.hour {
+            width: 4px;
+            height: 60px;
+            top: 40px;
+            left: 50%;
+            margin-left: -2px;
+        }
+        .clock-hand.minute {
+            width: 3px;
+            height: 80px;
+            top: 20px;
+            left: 50%;
+            margin-left: -1.5px;
+        }
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .time-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .time-input-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .time-input {
+            width: 60px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .time-input:focus {
+            border-color: var(--teal);
+            outline: none;
+        }
+        .time-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .time-btn {
+            width: 30px;
+            height: 25px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .time-btn:hover {
+            background: #f0f0f0;
+        }
+        .policy-box {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+        .policy-icon {
+            color: #2196f3;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .policy-content h4 {
+            color: #1565c0;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .policy-content p {
+            color: #1565c0;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+        .btn-back:hover {
+            background: #5a6268;
+        }
+        .btn-continue {
+            background: var(--dark-blue);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            float: right;
+        }
+        .btn-continue:hover {
+            background: #2a4a6f;
+        }
+        .btn-container {
+            clear: both;
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .readonly-date {
+            background: #f0f0f0;
+            color: #666;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="#" style="color: var(--primary-color); font-weight: bold;">
+                <i class="fas fa-hotel"></i> reterra Property Tech
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="step completed">
+                    <div class="step-circle"></div>
+                    <div class="step-label">Personal Information</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step completed">
+                    <div class="step-circle"></div>
+                    <div class="step-label">Further details</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step active">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">EAT</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Confirm information</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step">
+                    <div class="step-circle">5</div>
+                    <div class="step-label">Accept & Sign</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step">
+                    <div class="step-circle">6</div>
+                    <div class="step-label">Payment</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Form -->
+        <form id="eatForm" th:action="@{/checkin/eat/submit}" method="post">
+            <input type="hidden" th:name="bookingReference" th:value="${bookingReference}">
+            <input type="hidden" th:name="bookingId" th:value="${bookingId}">
+            <input type="hidden" th:name="guestEmail" th:value="${guestEmail}">
+            <input type="hidden" th:name="checkInDate" th:value="${checkInDate}">
+
+            <div class="form-container">
+                <h2 class="section-title">Estimated Arrival Time</h2>
+                <p class="section-desc">Let us know your arrival time for a smooth welcome and room readiness.</p>
+
+                <div class="eat-content">
+                    <!-- Arrival Day Section -->
+                    <div class="date-section">
+                        <div class="section-label">Arrival Day</div>
+                        <div class="calendar-container readonly-date">
+                            <div class="calendar-header">
+                                <button type="button" class="calendar-nav" disabled><i class="fas fa-chevron-left"></i></button>
+                                <div class="calendar-month" th:text="${checkInDateFormatted}">June 2025</div>
+                                <button type="button" class="calendar-nav" disabled><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <div class="calendar-weekdays">
+                                <div class="calendar-weekday">Sun</div>
+                                <div class="calendar-weekday">Mon</div>
+                                <div class="calendar-weekday">Tue</div>
+                                <div class="calendar-weekday">Wed</div>
+                                <div class="calendar-weekday">Thu</div>
+                                <div class="calendar-weekday">Fri</div>
+                                <div class="calendar-weekday">Sat</div>
+                            </div>
+                            <div class="calendar-days" id="calendarDays">
+                                <!-- Calendar days will be generated by JavaScript -->
+                            </div>
+                        </div>
+                        <p style="text-align: center; margin-top: 15px; color: #666; font-size: 14px;">
+                            <i class="fas fa-lock"></i> Check-in date is fixed and cannot be changed
+                        </p>
+                    </div>
+
+                    <!-- Arrival Time Section -->
+                    <div class="time-section">
+                        <div class="section-label">Arrival Time</div>
+                        
+                        <!-- Digital Time Display -->
+                        <div class="time-display">
+                            <div class="time-digits">
+                                <span id="displayHour">07</span>
+                                <span class="time-separator">:</span>
+                                <span id="displayMinute">00</span>
+                            </div>
+                            <div class="ampm-selector">
+                                <button type="button" class="ampm-btn active" id="btnAM" onclick="setAMPM('AM')">AM</button>
+                                <button type="button" class="ampm-btn" id="btnPM" onclick="setAMPM('PM')">PM</button>
+                            </div>
+                        </div>
+
+                        <!-- Analog Clock -->
+                        <div class="clock-container">
+                            <div class="clock-face" id="clockFace">
+                                <!-- Clock numbers and hands will be generated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Time Input Controls -->
+                        <div class="time-inputs">
+                            <div class="time-input-group">
+                                <label class="time-input-label">Hour</label>
+                                <input type="number" class="time-input" id="inputHour" min="1" max="12" value="7" 
+                                       th:value="${estimatedArrivalHour != null ? estimatedArrivalHour : 7}"
+                                       onchange="updateTime()">
+                                <div class="time-controls">
+                                    <button type="button" class="time-btn" onclick="adjustHour(1)">▲</button>
+                                    <button type="button" class="time-btn" onclick="adjustHour(-1)">▼</button>
+                                </div>
+                            </div>
+                            <div class="time-input-group">
+                                <label class="time-input-label">Minute</label>
+                                <input type="number" class="time-input" id="inputMinute" min="0" max="59" value="0" step="15"
+                                       th:value="${estimatedArrivalMinute != null ? estimatedArrivalMinute : 0}"
+                                       onchange="updateTime()">
+                                <div class="time-controls">
+                                    <button type="button" class="time-btn" onclick="adjustMinute(15)">▲</button>
+                                    <button type="button" class="time-btn" onclick="adjustMinute(-15)">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="hiddenAMPM" name="arrivalAMPM" value="AM" th:value="${estimatedArrivalAMPM != null ? estimatedArrivalAMPM : 'AM'}">
+                    </div>
+                </div>
+
+                <!-- Check-in Policy Box -->
+                <div class="policy-box">
+                    <i class="fas fa-info-circle policy-icon"></i>
+                    <div class="policy-content">
+                        <h4>Check-in Policy</h4>
+                        <p>Standard check-in begins at 3:00 PM. Early check-in from 12:00 PM and late check-in until 10:00 PM may be available upon request.</p>
+                        <p><strong>Reception desk hours:</strong> 24/7 available</p>
+                        <p><strong>Room keys available at reception or via digital key</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="btn-container">
+                <button type="button" class="btn btn-back" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button type="submit" class="btn btn-continue">
+                    Continue <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentHour = parseInt(document.getElementById('inputHour').value) || 7;
+        let currentMinute = parseInt(document.getElementById('inputMinute').value) || 0;
+        let currentAMPM = document.getElementById('hiddenAMPM').value || 'AM';
+        const checkInDate = document.querySelector('input[name="checkInDate"]').value;
+
+        // Initialize calendar
+        function initCalendar() {
+            const date = new Date(checkInDate);
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const day = date.getDate();
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+            
+            for (let i = 0; i < 42; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                if (currentDate.getMonth() !== month) {
+                    dayElement.classList.add('other-month');
+                }
+                
+                if (currentDate.getDate() === day && currentDate.getMonth() === month && currentDate.getFullYear() === year) {
+                    dayElement.classList.add('selected');
+                }
+                
+                const today = new Date();
+                if (currentDate.toDateString() === today.toDateString()) {
+                    dayElement.classList.add('today');
+                }
+                
+                dayElement.textContent = currentDate.getDate();
+                calendarDays.appendChild(dayElement);
+            }
+        }
+
+        // Initialize clock
+        function initClock() {
+            const clockFace = document.getElementById('clockFace');
+            clockFace.innerHTML = '';
+            
+            // Add clock numbers
+            for (let i = 1; i <= 12; i++) {
+                const number = document.createElement('div');
+                number.className = 'clock-number';
+                number.id = 'clockNum' + i;
+                number.textContent = i;
+                
+                const angle = (i * 30 - 90) * (Math.PI / 180);
+                const radius = 80;
+                const x = 100 + radius * Math.cos(angle);
+                const y = 100 + radius * Math.sin(angle);
+                
+                number.style.left = (x - 15) + 'px';
+                number.style.top = (y - 15) + 'px';
+                
+                clockFace.appendChild(number);
+            }
+            
+            // Add clock hands
+            const hourHand = document.createElement('div');
+            hourHand.className = 'clock-hand hour';
+            hourHand.id = 'hourHand';
+            clockFace.appendChild(hourHand);
+            
+            const minuteHand = document.createElement('div');
+            minuteHand.className = 'clock-hand minute';
+            minuteHand.id = 'minuteHand';
+            clockFace.appendChild(minuteHand);
+            
+            updateClock();
+        }
+
+        function updateTime() {
+            currentHour = parseInt(document.getElementById('inputHour').value) || 1;
+            currentMinute = parseInt(document.getElementById('inputMinute').value) || 0;
+            
+            // Validate hour
+            if (currentHour < 1) currentHour = 1;
+            if (currentHour > 12) currentHour = 12;
+            
+            // Validate minute
+            if (currentMinute < 0) currentMinute = 0;
+            if (currentMinute >= 60) currentMinute = 59;
+            // Round to nearest 15 minutes
+            currentMinute = Math.round(currentMinute / 15) * 15;
+            
+            document.getElementById('inputHour').value = currentHour;
+            document.getElementById('inputMinute').value = currentMinute;
+            
+            updateDisplay();
+            updateClock();
+        }
+
+        function adjustHour(delta) {
+            currentHour += delta;
+            if (currentHour < 1) currentHour = 12;
+            if (currentHour > 12) currentHour = 1;
+            document.getElementById('inputHour').value = currentHour;
+            updateTime();
+        }
+
+        function adjustMinute(delta) {
+            currentMinute += delta;
+            if (currentMinute < 0) currentMinute = 45;
+            if (currentMinute >= 60) currentMinute = 0;
+            // Round to nearest 15 minutes
+            currentMinute = Math.round(currentMinute / 15) * 15;
+            document.getElementById('inputMinute').value = currentMinute;
+            updateTime();
+        }
+
+        function setAMPM(ampm) {
+            currentAMPM = ampm;
+            document.getElementById('hiddenAMPM').value = ampm;
+            document.getElementById('btnAM').classList.toggle('active', ampm === 'AM');
+            document.getElementById('btnPM').classList.toggle('active', ampm === 'PM');
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('displayHour').textContent = String(currentHour).padStart(2, '0');
+            document.getElementById('displayMinute').textContent = String(currentMinute).padStart(2, '0');
+        }
+
+        function updateClock() {
+            // Update hour hand (12-hour format)
+            let hourAngle = (currentHour % 12) * 30 + (currentMinute / 60) * 30 - 90;
+            const hourHand = document.getElementById('hourHand');
+            hourHand.style.transform = `rotate(${hourAngle}deg)`;
+            
+            // Update minute hand
+            let minuteAngle = currentMinute * 6 - 90;
+            const minuteHand = document.getElementById('minuteHand');
+            minuteHand.style.transform = `rotate(${minuteAngle}deg)`;
+            
+            // Highlight active hour number
+            document.querySelectorAll('.clock-number').forEach(el => {
+                el.classList.remove('active');
+            });
+            const activeNum = document.getElementById('clockNum' + (currentHour % 12 || 12));
+            if (activeNum) {
+                activeNum.classList.add('active');
+            }
+        }
+
+        function goBack() {
+            const bookingReference = document.querySelector('input[name="bookingReference"]').value;
+            const bookingId = document.querySelector('input[name="bookingId"]').value;
+            const guestEmail = document.querySelector('input[name="guestEmail"]').value;
+            window.location.href = `/checkin/further-details?bookingReference=${encodeURIComponent(bookingReference)}&bookingId=${encodeURIComponent(bookingId)}&guestEmail=${encodeURIComponent(guestEmail)}`;
+        }
+
+        // Initialize on page load
+        initCalendar();
+        initClock();
+        updateTime();
+        
+        // Set initial AM/PM from hidden input
+        if (document.getElementById('hiddenAMPM').value === 'PM') {
+            setAMPM('PM');
+        }
+    </script>
+</body>
+</html>
