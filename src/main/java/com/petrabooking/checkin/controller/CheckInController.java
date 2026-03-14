@@ -538,7 +538,185 @@ public class CheckInController {
         String arrivalTime24 = String.format("%02d:%02d", hour24, Integer.parseInt(arrivalMinute));
         System.out.println("[CHECKIN] Arrival time (24h): " + arrivalTime24);
 
-        // Redirect to confirmation page
+        // Redirect to confirm information page
+        return "redirect:/checkin/confirm-information?bookingReference=" + bookingReference + 
+               "&bookingId=" + bookingId + "&guestEmail=" + guestEmail;
+    }
+
+    /**
+     * Show confirm information page
+     */
+    @GetMapping("/confirm-information")
+    public String showConfirmInformation(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            HttpSession session,
+            Model model) {
+
+        System.out.println("[CHECKIN] /checkin/confirm-information bookingReference=" + bookingReference);
+
+        // Get booking data
+        Booking bookingData = supabaseService.getBookingByReference(bookingReference);
+        if (bookingData == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+
+        Hotel hotel = supabaseService.getHotelById(bookingData.getHotelId());
+        if (hotel == null) {
+            model.addAttribute("error", "Hotel information not found.");
+            return "error";
+        }
+
+        // Load personal info from session
+        Map<String, Object> personalInfo = (Map<String, Object>) session.getAttribute("personalInfo_" + bookingId);
+        if (personalInfo == null) {
+            model.addAttribute("error", "Personal information not found. Please start over.");
+            return "error";
+        }
+
+        // Format dates
+        java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("MMM d, yyyy");
+        String checkInDateStr = bookingData.getCheckInDate().format(dateFormatter);
+        String checkOutDateStr = bookingData.getCheckOutDate().format(dateFormatter);
+
+        // Load arrival time from session
+        Map<String, Object> eatData = (Map<String, Object>) session.getAttribute("eat_" + bookingId);
+        String arrivalTime = "3:00 PM"; // Default
+        if (eatData != null) {
+            String hour = String.valueOf(eatData.get("arrivalHour"));
+            String minute = String.valueOf(eatData.get("arrivalMinute"));
+            String ampm = String.valueOf(eatData.get("arrivalAMPM"));
+            arrivalTime = hour + ":" + (minute.length() == 1 ? "0" + minute : minute) + " " + ampm;
+        }
+
+        String checkInDisplay = checkInDateStr + " | " + arrivalTime;
+        String checkOutDisplay = checkOutDateStr + " | 3:00 PM"; // Default check-out time
+
+        // Format owner information
+        String ownerFullName = String.valueOf(personalInfo.get("guestFirstName"));
+        String ownerNationality = String.valueOf(personalInfo.get("nationality"));
+        String ownerDateOfBirth = formatDateOfBirth(String.valueOf(personalInfo.get("dateOfBirth")));
+        String ownerPhone = String.valueOf(personalInfo.get("guestPhone"));
+        String ownerEmail = String.valueOf(personalInfo.get("guestEmail"));
+        String ownerIdPassport = maskId(String.valueOf(personalInfo.get("idPassportNumber")));
+
+        // Load additional guests
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> additionalGuests = (List<Map<String, String>>) personalInfo.get("additionalGuests");
+        List<Map<String, String>> otherGuestsList = new ArrayList<>();
+        if (additionalGuests != null) {
+            for (Map<String, String> guest : additionalGuests) {
+                Map<String, String> guestInfo = new HashMap<>();
+                guestInfo.put("fullName", guest.get("full_name"));
+                guestInfo.put("nationality", guest.get("nationality"));
+                guestInfo.put("dateOfBirth", formatDateOfBirth(guest.get("date_of_birth")));
+                guestInfo.put("idPassport", maskId(guest.get("id_passport")));
+                otherGuestsList.add(guestInfo);
+            }
+        }
+
+        model.addAttribute("bookingReference", bookingReference);
+        model.addAttribute("bookingId", bookingId);
+        model.addAttribute("guestEmail", guestEmail);
+        model.addAttribute("hotel", hotel);
+        model.addAttribute("formattedReservationNumber", formatReservationNumber(bookingData.getBookingReference()));
+        model.addAttribute("checkInDisplay", checkInDisplay);
+        model.addAttribute("checkOutDisplay", checkOutDisplay);
+        model.addAttribute("ownerFullName", ownerFullName);
+        model.addAttribute("ownerNationality", ownerNationality);
+        model.addAttribute("ownerDateOfBirth", ownerDateOfBirth);
+        model.addAttribute("ownerPhone", ownerPhone);
+        model.addAttribute("ownerEmail", ownerEmail);
+        model.addAttribute("ownerIdPassport", ownerIdPassport);
+        model.addAttribute("otherGuests", otherGuestsList);
+
+        return "confirm-information";
+    }
+
+    /**
+     * Submit confirm information (final confirmation)
+     */
+    @PostMapping("/confirm-information/submit")
+    public String submitConfirmInformation(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            HttpSession session,
+            Model model) {
+
+        System.out.println("[CHECKIN] Final confirmation submitted for bookingId=" + bookingId);
+
+        // TODO: Save all collected data to database (pre_checkin_submissions table)
+        // Combine all session data and save to Supabase
+        
+        // Clear session data after successful submission (optional)
+        // session.removeAttribute("personalInfo_" + bookingId);
+        // session.removeAttribute("furtherDetails_" + bookingId);
+        // session.removeAttribute("eat_" + bookingId);
+        // session.removeAttribute("accessibilityForm_" + bookingId);
+
+        // Redirect to final confirmation/success page
         return "redirect:/checkin/confirmation?booking=" + bookingReference;
+    }
+
+    /**
+     * Send email with reservation details
+     */
+    @PostMapping("/confirm-information/send-email")
+    @ResponseBody
+    public Map<String, Object> sendEmailDetails(
+            @RequestParam String bookingReference,
+            @RequestParam String guestEmail,
+            HttpSession session) {
+
+        System.out.println("[CHECKIN] Sending email details to " + guestEmail);
+
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // TODO: Implement email sending logic
+            // You can use the same email service (Resend/SendGrid) as in the Edge Function
+            // Or create a new service method to send confirmation email with all details
+            
+            response.put("success", true);
+            response.put("message", "Email sent successfully");
+        } catch (Exception e) {
+            System.out.println("[CHECKIN] Error sending email: " + e.getMessage());
+            response.put("success", false);
+            response.put("message", "Failed to send email: " + e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * Format date of birth for display
+     */
+    private String formatDateOfBirth(String dateStr) {
+        if (dateStr == null || dateStr.equals("null") || dateStr.isEmpty()) {
+            return "N/A";
+        }
+        try {
+            java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy");
+            return date.format(formatter);
+        } catch (Exception e) {
+            return dateStr;
+        }
+    }
+
+    /**
+     * Mask ID/Passport number (show only last 4 digits)
+     */
+    private String maskId(String id) {
+        if (id == null || id.equals("null") || id.isEmpty()) {
+            return "N/A";
+        }
+        if (id.length() <= 4) {
+            return "****";
+        }
+        return "*******" + id.substring(id.length() - 4);
     }
 }

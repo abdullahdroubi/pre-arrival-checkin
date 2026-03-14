@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Information - Pre-Arrival Check-In</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --teal: #00bcd4;
+            --dark-blue: #1e3a5f;
+            --light-green: #4caf50;
+        }
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 20px;
+        }
+        .back-link:hover {
+            color: var(--teal);
+        }
+        .progress-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            border: 3px solid #e0e0e0;
+        }
+        .step.completed .step-circle {
+            background: var(--light-green);
+            color: white;
+            border-color: var(--light-green);
+        }
+        .step.completed .step-circle::before {
+            content: "✓";
+        }
+        .step.active .step-circle {
+            background: var(--teal);
+            color: white;
+            border-color: var(--teal);
+        }
+        .step-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .step.active .step-label {
+            color: var(--teal);
+            font-weight: bold;
+        }
+        .step.completed .step-label {
+            color: var(--light-green);
+            font-weight: bold;
+        }
+        .step-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: -1;
+        }
+        .step.completed .step-line {
+            background: var(--light-green);
+        }
+        .step:last-child .step-line {
+            display: none;
+        }
+        .page-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin: 30px 0;
+        }
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .info-row {
+            display: flex;
+            align-items: start;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #f0fdfe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .info-icon i {
+            color: var(--teal);
+            font-size: 18px;
+        }
+        .info-content {
+            flex: 1;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        .info-link {
+            color: var(--teal);
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .info-link:hover {
+            text-decoration: underline;
+        }
+        .guest-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .guest-item:last-child {
+            margin-bottom: 0;
+        }
+        .guest-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .guest-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .guest-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .guest-detail-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+        .guest-detail-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        .btn-email {
+            background: white;
+            color: var(--light-green);
+            border: 2px solid var(--light-green);
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-email:hover {
+            background: var(--light-green);
+            color: white;
+        }
+        .btn-confirm {
+            background: var(--dark-blue);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-confirm:hover {
+            background: #2a4a6f;
+        }
+        .masked-value {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="#" style="color: var(--primary-color); font-weight: bold;">
+                <i class="fas fa-hotel"></i> reterra Property Tech
+            </a>
+            <a href="#" class="back-link" onclick="goBack(); return false;">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="step completed">
+                    <div class="step-circle"></div>
+                    <div class="step-label">Personal Information</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step completed">
+                    <div class="step-circle"></div>
+                    <div class="step-label">Further details</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step completed">
+                    <div class="step-circle"></div>
+                    <div class="step-label">EAT</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step active">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Confirm information</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step">
+                    <div class="step-circle">5</div>
+                    <div class="step-label">Accept & Sign</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step">
+                    <div class="step-circle">6</div>
+                    <div class="step-label">Payment</div>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="page-title">Confirm information</h1>
+
+        <form id="confirmForm" th:action="@{/checkin/confirm-information/submit}" method="post">
+            <input type="hidden" th:name="bookingReference" th:value="${bookingReference}">
+            <input type="hidden" th:name="bookingId" th:value="${bookingId}">
+            <input type="hidden" th:name="guestEmail" th:value="${guestEmail}">
+
+            <!-- Reservation Summary Card -->
+            <div class="info-card">
+                <h2 class="card-title">Reservation Summary</h2>
+                
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Hotel</div>
+                        <div class="info-value">
+                            <span th:text="${hotel.name}">reterra Hotel</span>
+                            <a href="#" class="info-link">View on Map</a>
+                        </div>
+                        <div style="font-size: 14px; color: #666; margin-top: 5px;" 
+                             th:text="${hotel.address + ', ' + hotel.city + ' ' + hotel.country}">
+                            King Fahd Road, Riyadh Saudi Arabia 12345
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Reservation Number</div>
+                        <div class="info-value" th:text="${formattedReservationNumber}">#1234-5678</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Check-in</div>
+                        <div class="info-value" th:text="${checkInDisplay}">Sep 12, 2025 | 12:00 PM</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Check-out</div>
+                        <div class="info-value" th:text="${checkOutDisplay}">Sep 24, 2025 | 3:00 PM</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reservation Owner Card -->
+            <div class="info-card">
+                <h2 class="card-title">Reservation Owner</h2>
+                
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value" th:text="${ownerFullName}">Mohammad Alayyoubi</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Nationality</div>
+                        <div class="info-value" th:text="${ownerNationality}">Syrian</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Date of Birth</div>
+                        <div class="info-value" th:text="${ownerDateOfBirth}">January 15, 1990</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value" th:text="${ownerPhone}">+966 000 000 000</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-value" th:text="${ownerEmail}">Ayyoubi@reterra.io</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">ID / Passport Number</div>
+                        <div class="info-value masked-value" th:text="${ownerIdPassport}">*******1234</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Guests Card -->
+            <div class="info-card" th:if="${otherGuests != null && !otherGuests.isEmpty()}">
+                <h2 class="card-title">Other Guests</h2>
+                
+                <div class="guest-item" th:each="guest, iterStat : ${otherGuests}">
+                    <div class="guest-title" th:text="'Guest ' + ${iterStat.count}">First Guest</div>
+                    <div class="guest-details">
+                        <div class="guest-detail-item">
+                            <div class="guest-detail-label">Full Name</div>
+                            <div class="guest-detail-value" th:text="${guest.fullName}">Ahmad Alayyoubi</div>
+                        </div>
+                        <div class="guest-detail-item">
+                            <div class="guest-detail-label">Nationality</div>
+                            <div class="guest-detail-value" th:text="${guest.nationality}">Syrian</div>
+                        </div>
+                        <div class="guest-detail-item">
+                            <div class="guest-detail-label">Date of Birth</div>
+                            <div class="guest-detail-value" th:text="${guest.dateOfBirth}">June 22, 1990</div>
+                        </div>
+                        <div class="guest-detail-item">
+                            <div class="guest-detail-label">ID Number</div>
+                            <div class="guest-detail-value masked-value" th:text="${guest.idPassport}">*******1756</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button type="button" class="btn btn-email" onclick="emailDetails()">
+                    <i class="fas fa-envelope"></i> Email me the details
+                </button>
+                <button type="submit" class="btn btn-confirm">
+                    Confirm <i class="fas fa-check"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function goBack() {
+            const bookingReference = document.querySelector('input[name="bookingReference"]').value;
+            const bookingId = document.querySelector('input[name="bookingId"]').value;
+            const guestEmail = document.querySelector('input[name="guestEmail"]').value;
+            window.location.href = `/checkin/eat?bookingReference=${encodeURIComponent(bookingReference)}&bookingId=${encodeURIComponent(bookingId)}&guestEmail=${encodeURIComponent(guestEmail)}`;
+        }
+
+        function emailDetails() {
+            const bookingReference = document.querySelector('input[name="bookingReference"]').value;
+            const guestEmail = document.querySelector('input[name="guestEmail"]').value;
+            
+            // Call backend to send email
+            fetch('/checkin/confirm-information/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `bookingReference=${encodeURIComponent(bookingReference)}&guestEmail=${encodeURIComponent(guestEmail)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email sent successfully!');
+                } else {
+                    alert('Error sending email: ' + (data.message || 'Please try again'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error sending email. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
