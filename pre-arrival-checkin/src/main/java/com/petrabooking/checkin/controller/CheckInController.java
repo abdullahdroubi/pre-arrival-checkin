@@ -128,12 +128,19 @@ public class CheckInController {
 
     @GetMapping("/confirmation")
     public String showConfirmation(
-            @RequestParam String booking,
+            @RequestParam(value = "booking", required = false) String booking,
+            @RequestParam(value = "bookingReference", required = false) String bookingReference,
             HttpSession session,
             Model model) {
-        System.out.println("[CHECKIN] /checkin/confirmation booking=" + booking);
+        String resolvedBooking = (booking != null && !booking.isBlank()) ? booking : bookingReference;
+        System.out.println("[CHECKIN] /checkin/confirmation booking=" + resolvedBooking);
 
-        Booking bookingData = supabaseService.getBookingByReference(booking);
+        if (resolvedBooking == null || resolvedBooking.isBlank()) {
+            model.addAttribute("error", "Missing reservation reference (booking).");
+            return "error";
+        }
+
+        Booking bookingData = supabaseService.getBookingByReference(resolvedBooking);
         if (bookingData == null) {
             model.addAttribute("error", "Booking not found.");
             return "error";
@@ -307,7 +314,8 @@ public class CheckInController {
         // In a real implementation, you'd save this to Supabase
 
         // Redirect to confirmation page
-        return "redirect:/checkin/confirmation?booking=" + bookingReference;
+        return "redirect:/checkin/confirmation?booking=" + bookingReference +
+               "&bookingReference=" + bookingReference;
     }
 
     /**
