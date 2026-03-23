@@ -366,24 +366,22 @@ public class CheckInController {
      */
     @PostMapping("/eat/submit")
     public String submitEAT(
-            @RequestParam(value = "bookingReference", required = false) String bookingReference,
-            @RequestParam(value = "booking", required = false) String booking,
-            @RequestParam(value = "bookingId", required = false) String bookingIdStr,
-            @RequestParam(value = "guestEmail", required = false) String guestEmail,
-            @RequestParam(value = "estimatedArrivalTime", required = false) String estimatedArrivalTime,
             @RequestParam Map<String, String> formData,
             HttpSession session,
             Model model) {
-        String resolvedBookingReference =
-                (bookingReference != null && !bookingReference.isBlank()) ? bookingReference : booking;
+        // Use only raw formData to avoid Spring request parameter binding issues.
+        String bookingReference = formData.get("bookingReference");
+        if (bookingReference == null || bookingReference.isBlank()) {
+            bookingReference = formData.get("booking");
+        }
 
-        if (resolvedBookingReference == null || resolvedBookingReference.isBlank()) {
+        if (bookingReference == null || bookingReference.isBlank()) {
             // Keep consistent with confirmation: show a normal error page instead of 400
             model.addAttribute("error", "Missing reservation reference (bookingReference).");
             return "error";
         }
 
-        Booking bookingData = supabaseService.getBookingByReference(resolvedBookingReference);
+        Booking bookingData = supabaseService.getBookingByReference(bookingReference);
         if (bookingData == null) {
             model.addAttribute("error", "Booking not found.");
             return "error";
@@ -392,7 +390,7 @@ public class CheckInController {
         int bookingId = bookingData.getId();
 
         // Be resilient to different field names used by templates
-        String resolvedEstimatedArrivalTime = estimatedArrivalTime;
+        String resolvedEstimatedArrivalTime = formData.get("estimatedArrivalTime");
         if (resolvedEstimatedArrivalTime == null || resolvedEstimatedArrivalTime.isBlank()) {
             resolvedEstimatedArrivalTime = formData.get("eatTime");
         }
@@ -404,8 +402,8 @@ public class CheckInController {
             session.setAttribute("eat_" + bookingId, resolvedEstimatedArrivalTime);
         }
 
-        return "redirect:/checkin/confirmation?bookingReference=" + resolvedBookingReference +
-               "&booking=" + resolvedBookingReference;
+        return "redirect:/checkin/confirmation?bookingReference=" + bookingReference +
+               "&booking=" + bookingReference;
     }
 
     /**
