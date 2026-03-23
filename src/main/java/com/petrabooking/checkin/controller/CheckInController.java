@@ -508,17 +508,34 @@ public class CheckInController {
      */
     @PostMapping("/eat/submit")
     public String submitEAT(
-            @RequestParam String bookingReference,
-            @RequestParam String bookingId,
-            @RequestParam String guestEmail,
-            @RequestParam String checkInDate,
-            @RequestParam String arrivalHour,
-            @RequestParam String arrivalMinute,
-            @RequestParam String arrivalAMPM,
+            @RequestParam Map<String, String> formData,
             HttpSession session,
             Model model) {
 
-        System.out.println("[CHECKIN] Submitting EAT for bookingId=" + bookingId + ", time=" + arrivalHour + ":" + arrivalMinute + " " + arrivalAMPM);
+        // Accept raw formData to avoid Spring 400s when a field is missing/blank.
+        String bookingReference = formData.get("bookingReference");
+        String bookingId = formData.get("bookingId");
+        String guestEmail = formData.get("guestEmail");
+
+        String arrivalHour = formData.get("arrivalHour");
+        String arrivalMinute = formData.get("arrivalMinute");
+        String arrivalAMPM = formData.get("arrivalAMPM");
+
+        // Safe defaults (used only if inputs are missing/blank)
+        if (bookingReference == null || bookingReference.isBlank()) bookingReference = formData.get("booking");
+        if (arrivalHour == null || arrivalHour.isBlank()) arrivalHour = "7";
+        if (arrivalMinute == null || arrivalMinute.isBlank()) arrivalMinute = "0";
+        if (arrivalAMPM == null || arrivalAMPM.isBlank()) arrivalAMPM = "AM";
+
+        if (bookingReference == null || bookingReference.isBlank()
+                || bookingId == null || bookingId.isBlank()
+                || guestEmail == null || guestEmail.isBlank()) {
+            model.addAttribute("error", "Missing required reservation identifiers.");
+            return "error";
+        }
+
+        System.out.println("[CHECKIN] Submitting EAT for bookingId=" + bookingId
+                + ", time=" + arrivalHour + ":" + arrivalMinute + " " + arrivalAMPM);
 
         // Save to session for persistence
         Map<String, Object> data = new HashMap<>();
@@ -529,13 +546,21 @@ public class CheckInController {
 
         // TODO: Save to database (pre_checkin_submissions table)
         // Convert to 24-hour format for storage
-        int hour24 = Integer.parseInt(arrivalHour);
+        int hour24;
+        int minuteInt;
+        try {
+            hour24 = Integer.parseInt(arrivalHour);
+            minuteInt = Integer.parseInt(arrivalMinute);
+        } catch (Exception e) {
+            hour24 = 7;
+            minuteInt = 0;
+        }
         if (arrivalAMPM.equals("PM") && hour24 != 12) {
             hour24 += 12;
         } else if (arrivalAMPM.equals("AM") && hour24 == 12) {
             hour24 = 0;
         }
-        String arrivalTime24 = String.format("%02d:%02d", hour24, Integer.parseInt(arrivalMinute));
+        String arrivalTime24 = String.format("%02d:%02d", hour24, minuteInt);
         System.out.println("[CHECKIN] Arrival time (24h): " + arrivalTime24);
 
         // Redirect to confirm information page
