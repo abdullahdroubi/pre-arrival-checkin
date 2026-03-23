@@ -313,9 +313,99 @@ public class CheckInController {
         // For now, we'll just redirect to confirmation page
         // In a real implementation, you'd save this to Supabase
 
-        // Redirect to confirmation page
-        return "redirect:/checkin/confirmation?booking=" + bookingReference +
-               "&bookingReference=" + bookingReference;
+        // Redirect to EAT page (step 3)
+        return "redirect:/checkin/eat?bookingReference=" + bookingReference +
+               "&bookingId=" + bookingId + "&guestEmail=" + guestEmail;
+    }
+
+    /**
+     * Show EAT (Estimated Arrival Time) step.
+     */
+    @GetMapping("/eat")
+    public String showEAT(
+            @RequestParam(value = "bookingReference", required = false) String bookingReference,
+            @RequestParam(value = "booking", required = false) String booking,
+            @RequestParam(value = "bookingId", required = false) String bookingIdStr,
+            @RequestParam(value = "guestEmail", required = false) String guestEmail,
+            HttpSession session,
+            Model model) {
+        String resolvedBookingReference =
+                (bookingReference != null && !bookingReference.isBlank()) ? bookingReference : booking;
+
+        if (resolvedBookingReference == null || resolvedBookingReference.isBlank()) {
+            model.addAttribute("error", "Missing reservation reference (bookingReference).");
+            return "error";
+        }
+
+        Booking bookingData = supabaseService.getBookingByReference(resolvedBookingReference);
+        if (bookingData == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+
+        int bookingId = bookingData.getId();
+        String resolvedGuestEmail = (guestEmail != null && !guestEmail.isBlank())
+                ? guestEmail
+                : bookingData.getGuestEmail();
+
+        model.addAttribute("bookingReference", resolvedBookingReference);
+        model.addAttribute("bookingId", bookingId);
+        model.addAttribute("guestEmail", resolvedGuestEmail);
+
+        // Pre-fill estimated arrival time if user already submitted
+        Object eatObj = session.getAttribute("eat_" + bookingId);
+        if (eatObj instanceof String) {
+            model.addAttribute("estimatedArrivalTime", eatObj);
+        }
+
+        return "eat";
+    }
+
+    /**
+     * Submit EAT and redirect to confirmation.
+     */
+    @PostMapping("/eat/submit")
+    public String submitEAT(
+            @RequestParam(value = "bookingReference", required = false) String bookingReference,
+            @RequestParam(value = "booking", required = false) String booking,
+            @RequestParam(value = "bookingId", required = false) String bookingIdStr,
+            @RequestParam(value = "guestEmail", required = false) String guestEmail,
+            @RequestParam(value = "estimatedArrivalTime", required = false) String estimatedArrivalTime,
+            @RequestParam Map<String, String> formData,
+            HttpSession session,
+            Model model) {
+        String resolvedBookingReference =
+                (bookingReference != null && !bookingReference.isBlank()) ? bookingReference : booking;
+
+        if (resolvedBookingReference == null || resolvedBookingReference.isBlank()) {
+            // Keep consistent with confirmation: show a normal error page instead of 400
+            model.addAttribute("error", "Missing reservation reference (bookingReference).");
+            return "error";
+        }
+
+        Booking bookingData = supabaseService.getBookingByReference(resolvedBookingReference);
+        if (bookingData == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+
+        int bookingId = bookingData.getId();
+
+        // Be resilient to different field names used by templates
+        String resolvedEstimatedArrivalTime = estimatedArrivalTime;
+        if (resolvedEstimatedArrivalTime == null || resolvedEstimatedArrivalTime.isBlank()) {
+            resolvedEstimatedArrivalTime = formData.get("eatTime");
+        }
+        if (resolvedEstimatedArrivalTime == null || resolvedEstimatedArrivalTime.isBlank()) {
+            resolvedEstimatedArrivalTime = formData.get("estimatedArrival");
+        }
+
+        if (resolvedEstimatedArrivalTime != null && !resolvedEstimatedArrivalTime.isBlank()) {
+            session.setAttribute("eat_" + bookingId, resolvedEstimatedArrivalTime);
+        }
+
+        return "redirect:/checkin/confirmation?bookingReference=" + resolvedBookingReference +
+               "&booking=" + resolvedBookingReference;
     }
 
     /**
