@@ -682,7 +682,56 @@ public class CheckInController {
         // session.removeAttribute("eat_" + bookingId);
         // session.removeAttribute("accessibilityForm_" + bookingId);
 
-        // Redirect to final confirmation/success page
+        // Next step: show room upgrade offers before final confirmation.
+        return "redirect:/checkin/upgrade-room?bookingReference=" + bookingReference +
+               "&bookingId=" + bookingId +
+               "&guestEmail=" + guestEmail;
+    }
+
+    /**
+     * Show upgrade room page (step after Confirm information).
+     */
+    @GetMapping("/upgrade-room")
+    public String showUpgradeRoom(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            Model model) {
+        model.addAttribute("bookingReference", bookingReference);
+        model.addAttribute("bookingId", bookingId);
+        model.addAttribute("guestEmail", guestEmail);
+        return "upgrade-room";
+    }
+
+    /**
+     * Submit upgrade selection and continue to final confirmation.
+     */
+    @PostMapping("/upgrade-room/submit")
+    public String submitUpgradeRoom(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            @RequestParam(required = false) String upgradeOffer,
+            HttpSession session) {
+
+        if (upgradeOffer != null && !upgradeOffer.isBlank()) {
+            session.setAttribute("upgradeOffer_" + bookingId, upgradeOffer);
+        }
+
+        return "redirect:/checkin/confirmation?booking=" + bookingReference;
+    }
+
+    /**
+     * Skip upgrades and continue to final confirmation.
+     */
+    @PostMapping("/upgrade-room/skip")
+    public String skipUpgradeRoom(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            HttpSession session) {
+
+        session.setAttribute("upgradeOffer_" + bookingId, "skipped");
         return "redirect:/checkin/confirmation?booking=" + bookingReference;
     }
 
