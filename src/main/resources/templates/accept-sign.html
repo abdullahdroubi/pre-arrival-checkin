@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accept &amp; Sign - Pre-Arrival Check-In</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --teal: #00bcd4;
+            --teal-soft: rgba(0, 188, 212, 0.12);
+            --dark-blue: #1e3a5f;
+            --light-green: #4caf50;
+            --muted: #6c757d;
+        }
+        body { background: #f5f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px 0;
+        }
+        .back-link { color: #666; text-decoration: none; font-size: 14px; margin-left: 20px; }
+        .progress-container {
+            background: white;
+            padding: 16px 12px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            min-width: 640px;
+            gap: 4px;
+        }
+        .step { flex: 1; text-align: center; position: relative; }
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-weight: bold;
+            font-size: 13px;
+            border: 3px solid #e0e0e0;
+        }
+        .step.completed .step-circle {
+            background: var(--light-green);
+            color: white;
+            border-color: var(--light-green);
+        }
+        .step.completed .step-circle::before { content: "✓"; }
+        .step.active .step-circle {
+            background: var(--teal);
+            color: white;
+            border-color: var(--teal);
+        }
+        .step-label { font-size: 10px; color: #666; line-height: 1.2; }
+        @media (min-width: 992px) { .step-label { font-size: 11px; } }
+        .step.active .step-label { color: var(--teal); font-weight: bold; }
+
+        .section-card {
+            background: white;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .section-title { font-weight: 800; font-size: 1.35rem; color: #333; }
+        .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 0; }
+
+        .accordion-button:not(.collapsed) {
+            background: var(--teal-soft);
+            color: var(--dark-blue);
+            box-shadow: none;
+        }
+        .accordion-button:focus { box-shadow: 0 0 0 3px rgba(0,188,212,0.2); }
+        .policy-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--teal-soft);
+            color: var(--teal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .time-box-in {
+            border: 2px solid var(--light-green);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .time-box-out {
+            border: 2px solid #e57373;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .amenity-card {
+            background: var(--teal-soft);
+            border: 1px solid rgba(0,188,212,0.25);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            height: 100%;
+        }
+        .amenity-card i { color: var(--teal); font-size: 1.4rem; margin-bottom: 8px; }
+        .info-box { background: #f0f2f5; border-radius: 12px; padding: 16px; margin-top: 16px; }
+
+        .guest-tabs .nav-link {
+            border-radius: 10px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .guest-tabs .nav-link.active {
+            background: white !important;
+            color: var(--dark-blue) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .drop-zone {
+            border: 2px dashed #cfd8dc;
+            border-radius: 14px;
+            padding: 28px 16px;
+            text-align: center;
+            background: #fafbfc;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .drop-zone.dragover { border-color: var(--teal); background: var(--teal-soft); }
+        .btn-teal { background: var(--teal); color: white; font-weight: 700; border: none; }
+        .btn-teal:hover { background: #00a5bb; color: white; }
+        .btn-outline-navy { border: 2px solid var(--dark-blue); color: var(--dark-blue); font-weight: 700; }
+
+        .sig-tabs .nav-link { color: var(--muted); font-weight: 700; border: none; border-bottom: 3px solid transparent; }
+        .sig-tabs .nav-link.active { color: var(--teal) !important; border-bottom-color: var(--teal) !important; background: transparent; }
+        #sigCanvas {
+            border: 2px dashed #cfd8dc;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 100%;
+            height: 200px;
+            touch-action: none;
+            cursor: crosshair;
+            background: #fff;
+        }
+        .btn-clear-sig { position: absolute; bottom: 12px; right: 12px; }
+
+        .form-check-input:checked { background-color: var(--teal); border-color: var(--teal); }
+        .btn-continue {
+            background: var(--dark-blue);
+            color: white;
+            font-weight: 800;
+            padding: 14px 48px;
+            border-radius: 12px;
+            border: none;
+        }
+        .btn-continue:hover { background: #2a4a6f; color: white; }
+        .legal-small { font-size: 12px; color: var(--muted); }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-custom">
+    <div class="container">
+        <a class="navbar-brand" href="#" style="color: var(--teal); font-weight: bold;">
+            <i class="fas fa-hotel"></i> reterra Property Tech
+        </a>
+        <a href="#" class="back-link" onclick="history.back(); return false;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</nav>
+
+<div class="container mt-3 mb-5 pb-4">
+    <div class="progress-container">
+        <div class="progress-steps">
+            <div class="step completed"><div class="step-circle"></div><div class="step-label">Personal Information</div></div>
+            <div class="step completed"><div class="step-circle"></div><div class="step-label">Further details</div></div>
+            <div class="step completed"><div class="step-circle"></div><div class="step-label">EAT</div></div>
+            <div class="step completed"><div class="step-circle"></div><div class="step-label">Confirm information</div></div>
+            <div class="step completed"><div class="step-circle"></div><div class="step-label">Room upgrade</div></div>
+            <div class="step active"><div class="step-circle">6</div><div class="step-label">Accept &amp; Sign</div></div>
+            <div class="step"><div class="step-circle">7</div><div class="step-label">Payment</div></div>
+        </div>
+    </div>
+
+    <div th:if="${formError != null}" class="alert alert-warning" th:text="${formError}"></div>
+
+    <form th:action="@{/checkin/accept-sign/continue}" method="post" enctype="multipart/form-data" id="acceptSignForm">
+        <input type="hidden" name="bookingReference" th:value="${bookingReference}">
+        <input type="hidden" name="bookingId" th:value="${bookingId}">
+        <input type="hidden" name="guestEmail" th:value="${guestEmail}">
+        <input type="hidden" name="signatureMode" id="signatureMode" value="draw">
+        <input type="hidden" name="signatureDrawData" id="signatureDrawData" value="">
+
+        <!-- Policies -->
+        <div class="section-card">
+            <h2 class="section-title">Hotel Policies &amp; Terms</h2>
+            <p class="section-sub">Please review and accept the hotel policies before proceeding.</p>
+
+            <div class="accordion mt-3" id="policyAccordion">
+                <div class="accordion-item border-0 mb-2 rounded-3 overflow-hidden shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#pol1">
+                            <div class="d-flex align-items-center gap-3 w-100">
+                                <div class="policy-icon"><i class="fas fa-house-chimney-user"></i></div>
+                                <div class="text-start">
+                                    <div class="fw-bold">Room Rules</div>
+                                    <small class="text-muted">Essential guidelines for your comfort and safety</small>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="pol1" class="accordion-collapse collapse show" data-bs-parent="#policyAccordion">
+                        <div class="accordion-body">
+                            <div class="d-flex gap-2 mb-3"><i class="fas fa-volume-off text-secondary mt-1"></i>
+                                <div><strong>Quiet hours</strong><br>Please respect quiet hours from 10 PM to 8 AM. Excessive noise may incur charges.</div></div>
+                            <div class="d-flex gap-2 mb-3"><i class="fas fa-smoking-ban text-secondary mt-1"></i>
+                                <div><strong>No smoking</strong><br>Non-smoking property. Smoking in rooms or indoor areas is prohibited. Violation fee: <strong>500 JD</strong>.</div></div>
+                            <div class="d-flex gap-2"><i class="fas fa-paw text-secondary mt-1"></i>
+                                <div><strong>Pets</strong><br>Pets require prior approval. Service animals are welcome with proper documentation.</div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 mb-2 rounded-3 overflow-hidden shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#pol2">
+                            <div class="d-flex align-items-center gap-3 w-100">
+                                <div class="policy-icon"><i class="fas fa-clock"></i></div>
+                                <div class="text-start">
+                                    <div class="fw-bold">Check-in &amp; Check-out Times</div>
+                                    <small class="text-muted">Standard times and early/late options</small>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="pol2" class="accordion-collapse collapse" data-bs-parent="#policyAccordion">
+                        <div class="accordion-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="time-box-in">
+                                        <div class="text-success fw-bold" style="font-size:1.5rem;">3:00 PM</div>
+                                        <div class="text-muted small">Standard check-in</div>
+                                    </div>
+                                    <ul class="small mt-3 mb-0 text-muted">
+                                        <li>Early check-in (12:00–3:00 PM): <strong>100 JD</strong></li>
+                                        <li>Very early (before 12:00 PM): <strong>200 JD</strong></li>
+                                        <li class="mt-1">*Subject to room availability</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="time-box-out">
+                                        <div class="text-danger fw-bold" style="font-size:1.5rem;">12:00 PM</div>
+                                        <div class="text-muted small">Standard check-out</div>
+                                    </div>
+                                    <ul class="small mt-3 mb-0 text-muted">
+                                        <li>Late check-out (12:00–3:00 PM): <strong>150 JD</strong></li>
+                                        <li>After 3:00 PM: <strong class="text-success">Full night rate</strong></li>
+                                        <li class="mt-1">*Mobile app check-out available</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 mb-2 rounded-3 overflow-hidden shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#pol3">
+                            <div class="d-flex align-items-center gap-3 w-100">
+                                <div class="policy-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                                <div class="text-start">
+                                    <div class="fw-bold">Fees &amp; Damages</div>
+                                    <small class="text-muted">Additional charges and damage policies</small>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="pol3" class="accordion-collapse collapse" data-bs-parent="#policyAccordion">
+                        <div class="accordion-body text-muted">
+                            Guests may be charged for missing items, damage beyond normal wear, or deep cleaning when required.
+                            Incidentals are settled at check-out unless otherwise arranged with reception.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border-0 rounded-3 overflow-hidden shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#pol4">
+                            <div class="d-flex align-items-center gap-3 w-100">
+                                <div class="policy-icon"><i class="fas fa-concierge-bell"></i></div>
+                                <div class="text-start">
+                                    <div class="fw-bold">Facility &amp; Reception Info</div>
+                                    <small class="text-muted">Reception hours, amenities, and contacts</small>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="pol4" class="accordion-collapse collapse" data-bs-parent="#policyAccordion">
+                        <div class="accordion-body">
+                            <div class="fw-bold mb-2">Amenity hours</div>
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <div class="amenity-card"><i class="fas fa-person-swimming d-block"></i><strong>Pool</strong><br><small>6:00 AM – 10:00 PM</small></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="amenity-card"><i class="fas fa-dumbbell d-block"></i><strong>Fitness</strong><br><small>24/7 access</small></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="amenity-card"><i class="fas fa-briefcase d-block"></i><strong>Business center</strong><br><small>6:00 AM – 12:00 PM</small></div>
+                                </div>
+                            </div>
+                            <div class="info-box small text-muted">
+                                <div class="d-flex gap-2 mb-2"><i class="fas fa-bell text-secondary"></i>
+                                    <span><strong>Front desk</strong> — Available 24/7 for room service, housekeeping, and local recommendations.</span></div>
+                                <div class="d-flex gap-2"><i class="fas fa-moon text-secondary"></i>
+                                    <span><strong>Night manager</strong> — 11:00 PM – 7:00 AM for urgent assistance.</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-check mt-4">
+                <input class="form-check-input" type="checkbox" name="policiesAccepted" id="policiesAccepted" value="true">
+                <label class="form-check-label fw-semibold" for="policiesAccepted">
+                    I have read, understood, and agree to the hotel’s policies.
+                </label>
+            </div>
+        </div>
+
+        <!-- ID Upload -->
+        <div class="section-card">
+            <h2 class="section-title">Upload Your ID / Passport</h2>
+            <p class="section-sub">We use this to verify your identity securely. Documents are transmitted over HTTPS; retention follows hotel policy.</p>
+
+            <ul class="nav nav-pills guest-tabs gap-2 my-3 flex-wrap" id="guestTab" role="tablist">
+                <li class="nav-item" th:each="guestIdx, giter : ${guestSlotIndices}">
+                    <button type="button" class="nav-link" th:classappend="${giter.first} ? 'active'"
+                            th:id="${'guest-tab-' + guestIdx}"
+                            data-bs-toggle="tab" th:attr="data-bs-target=|#guest-pane-${guestIdx}|" role="tab"
+                            th:text="${guestIdx == 0} ? 'Owner' : ('Guest ' + (guestIdx + 1))">Owner</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="guestTabContent">
+                <div th:each="guestIdx, giter : ${guestSlotIndices}"
+                     class="tab-pane fade" th:classappend="${giter.first} ? 'show active'"
+                     th:id="${'guest-pane-' + guestIdx}" role="tabpanel">
+                    <div class="drop-zone id-drop" th:attr="data-slot=${guestIdx}">
+                        <i class="fas fa-cloud-arrow-up fa-2x text-secondary mb-2"></i>
+                        <p class="mb-1 fw-semibold">Drag and drop your ID / Passport</p>
+                        <p class="small text-muted mb-3">Or</p>
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            <label class="btn btn-teal mb-0"><i class="fas fa-file-arrow-up me-1"></i> Choose file
+                                <input type="file" class="d-none id-file-input" th:name="${'idSlot' + guestIdx}"
+                                       multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                            </label>
+                            <label class="btn btn-outline-navy mb-0"><i class="fas fa-camera me-1"></i> Take photo
+                                <input type="file" class="d-none id-camera-input" accept="image/*" capture="environment">
+                            </label>
+                        </div>
+                        <p class="small text-muted mt-3 mb-0">Supported formats: PDF, JPG, PNG (max 10 MB each)</p>
+                    </div>
+                    <ul class="list-group list-group-flush mt-2 small id-file-list" th:id="${'id-list-' + guestIdx}"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature -->
+        <div class="section-card">
+            <h2 class="section-title">Your Electronic Signature</h2>
+            <p class="section-sub">Please provide your signature to confirm your agreement with the policies.</p>
+
+            <ul class="nav nav-tabs sig-tabs border-0 mt-3" id="sigTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" type="button" id="sig-tab-draw" data-bs-toggle="tab" data-bs-target="#sig-draw" data-mode="draw" role="tab">
+                        <i class="fas fa-pen me-1"></i> Draw
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" type="button" id="sig-tab-type" data-bs-toggle="tab" data-bs-target="#sig-type" data-mode="type" role="tab">
+                        <i class="fas fa-keyboard me-1"></i> Type
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" type="button" id="sig-tab-upload" data-bs-toggle="tab" data-bs-target="#sig-upload" data-mode="upload" role="tab">
+                        <i class="fas fa-cloud-arrow-up me-1"></i> Upload
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content pt-3">
+                <div class="tab-pane fade show active" id="sig-draw" role="tabpanel">
+                    <div class="position-relative">
+                        <canvas id="sigCanvas" width="700" height="200"></canvas>
+                        <button type="button" class="btn btn-danger btn-sm btn-clear-sig" id="clearCanvas">Clear</button>
+                    </div>
+                    <p class="small text-muted mt-2 mb-0"><i class="fas fa-signature me-1"></i> Sign with mouse, finger, or stylus</p>
+                </div>
+                <div class="tab-pane fade" id="sig-type" role="tabpanel">
+                    <input type="text" class="form-control form-control-lg" name="signatureTypeText" id="signatureTypeText"
+                           placeholder="Type your full name as your signature" autocomplete="name">
+                </div>
+                <div class="tab-pane fade" id="sig-upload" role="tabpanel">
+                    <div class="drop-zone">
+                        <label class="btn btn-teal mb-0"><i class="fas fa-file-arrow-up me-1"></i> Choose signature file
+                            <input type="file" name="signatureUpload" id="signatureUpload" class="d-none"
+                                   accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                        </label>
+                        <p class="small text-muted mt-2 mb-0" id="sigUploadName"></p>
+                    </div>
+                </div>
+            </div>
+            <p class="legal-small mt-3 mb-0">
+                By signing electronically, you agree that this signature is as valid as a handwritten signature to the extent allowed by local law.
+            </p>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-continue btn-lg">Continue</button>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+    const form = document.getElementById('acceptSignForm');
+    const canvas = document.getElementById('sigCanvas');
+    const ctx = canvas.getContext('2d');
+    const signatureMode = document.getElementById('signatureMode');
+    const signatureDrawData = document.getElementById('signatureDrawData');
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const w = Math.max(320, Math.floor(rect.width));
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(200 * dpr);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#1e3a5f';
+    }
+    resizeCanvas();
+
+    let drawing = false;
+    function pos(e) {
+        const r = canvas.getBoundingClientRect();
+        const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+        const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+        return { x, y };
+    }
+    canvas.addEventListener('mousedown', e => { drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('mousemove', e => {
+        if (!drawing) return;
+        const p = pos(e);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    });
+    canvas.addEventListener('mouseup', () => { drawing = false; });
+    canvas.addEventListener('mouseleave', () => { drawing = false; });
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+    canvas.addEventListener('touchend', () => { drawing = false; });
+
+    document.getElementById('clearCanvas').addEventListener('click', function () {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+        resizeCanvas();
+    });
+
+    document.querySelectorAll('#sigTab [data-mode]').forEach(function (btn) {
+        btn.addEventListener('shown.bs.tab', function () {
+            signatureMode.value = this.getAttribute('data-mode') || 'draw';
+        });
+    });
+    document.querySelectorAll('#sigTab [data-bs-toggle="tab"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            signatureMode.value = this.getAttribute('data-mode') || 'draw';
+        });
+    });
+
+    document.getElementById('signatureUpload').addEventListener('change', function () {
+        const el = document.getElementById('sigUploadName');
+        el.textContent = this.files && this.files[0] ? this.files[0].name : '';
+    });
+
+    function renderFileList(slot) {
+        const list = document.getElementById('id-list-' + slot);
+        if (!list) return;
+        list.innerHTML = '';
+        const inp = document.querySelector('#guest-pane-' + slot + ' .id-file-input');
+        if (!inp || !inp.files.length) return;
+        for (let i = 0; i < inp.files.length; i++) {
+            const f = inp.files[i];
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = '<span><i class="fas fa-file me-2 text-secondary"></i>' + f.name + ' <small class="text-muted">(' + (f.size / 1024).toFixed(1) + ' KB)</small></span>';
+            list.appendChild(li);
+        }
+    }
+
+    document.querySelectorAll('.id-drop').forEach(function (zone) {
+        const slot = zone.getAttribute('data-slot');
+        const fileInp = zone.querySelector('.id-file-input');
+        const camInp = zone.querySelector('.id-camera-input');
+
+        function addFiles(fileList) {
+            const dt = new DataTransfer();
+            for (let i = 0; i < fileInp.files.length; i++) dt.items.add(fileInp.files[i]);
+            for (let i = 0; i < fileList.length; i++) dt.items.add(fileList[i]);
+            fileInp.files = dt.files;
+            renderFileList(slot);
+        }
+
+        zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', function () { zone.classList.remove('dragover'); });
+        zone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+        });
+        fileInp.addEventListener('change', function () { renderFileList(slot); });
+        camInp.addEventListener('change', function () {
+            if (!this.files.length) return;
+            addFiles(this.files);
+            this.value = '';
+        });
+    });
+
+    form.addEventListener('submit', function () {
+        if (signatureMode.value === 'draw') {
+            signatureDrawData.value = canvas.toDataURL('image/png');
+        } else {
+            signatureDrawData.value = '';
+        }
+    });
+})();
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ package com.petrabooking.checkin.controller;
 import jakarta.servlet.http.HttpSession;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Controller
 @RequestMapping("/checkin")
@@ -736,7 +740,7 @@ public class CheckInController {
         String choice = upgradeOffer == null ? "" : upgradeOffer.trim();
         if (choice.isEmpty() || "keep".equalsIgnoreCase(choice)) {
             session.setAttribute("upgradeOffer_" + bookingId, "keep");
-            return "redirect:/checkin/confirmation?booking=" + bookingReference;
+            return redirectToAcceptSign(bookingReference, bookingId, guestEmail);
         }
 
         int newRoomId;
@@ -749,7 +753,7 @@ public class CheckInController {
 
         if (booking.getRoomId() != null && newRoomId == booking.getRoomId()) {
             session.setAttribute("upgradeOffer_" + bookingId, "keep");
-            return "redirect:/checkin/confirmation?booking=" + bookingReference;
+            return redirectToAcceptSign(bookingReference, bookingId, guestEmail);
         }
 
         boolean ok = supabaseService.updateBookingRoomAndTotal(id, newRoomId);
@@ -759,7 +763,7 @@ public class CheckInController {
         }
 
         session.setAttribute("upgradeOffer_" + bookingId, "room:" + newRoomId);
-        return "redirect:/checkin/confirmation?booking=" + bookingReference;
+        return redirectToAcceptSign(bookingReference, bookingId, guestEmail);
     }
 
     /**
@@ -773,7 +777,212 @@ public class CheckInController {
             HttpSession session) {
 
         session.setAttribute("upgradeOffer_" + bookingId, "skipped");
+        return redirectToAcceptSign(bookingReference, bookingId, guestEmail);
+    }
+
+    private String redirectToAcceptSign(String bookingReference, String bookingId, String guestEmail) {
+        return "redirect:" + UriComponentsBuilder.fromPath("/checkin/accept-sign")
+                .queryParam("bookingReference", bookingReference)
+                .queryParam("bookingId", bookingId)
+                .queryParam("guestEmail", guestEmail)
+                .build()
+                .toUriString();
+    }
+
+    @GetMapping("/accept-sign")
+    public String showAcceptSign(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            Model model) {
+
+        return renderAcceptSignPage(bookingReference, bookingId, guestEmail, model, null);
+    }
+
+    @PostMapping("/accept-sign/continue")
+    public String submitAcceptSign(
+            MultipartHttpServletRequest request,
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            @RequestParam(required = false) String policiesAccepted,
+            @RequestParam String signatureMode,
+            @RequestParam(required = false) String signatureDrawData,
+            @RequestParam(required = false) String signatureTypeText,
+            HttpSession session,
+            Model model) {
+
+        int id;
+        try {
+            id = Integer.parseInt(bookingId.trim());
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid booking.");
+            return "error";
+        }
+
+        Booking booking = supabaseService.getBookingById(id);
+        if (booking == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+        if (booking.getGuestEmail() == null
+                || !booking.getGuestEmail().trim().equalsIgnoreCase(guestEmail.trim())) {
+            model.addAttribute("error", "Email does not match this booking.");
+            return "error";
+        }
+
+        int guests = booking.getNumberOfGuests() != null && booking.getNumberOfGuests() > 0
+                ? booking.getNumberOfGuests()
+                : 1;
+
+        boolean policiesOk = "true".equalsIgnoreCase(policiesAccepted) || "on".equalsIgnoreCase(policiesAccepted);
+        String err = validateAcceptSignSubmission(
+                request, policiesOk, signatureMode, signatureDrawData, signatureTypeText, guests);
+        if (err != null) {
+            return renderAcceptSignPage(bookingReference, bookingId, guestEmail, model, err);
+        }
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("bookingId", id);
+        payload.put("signatureMode", signatureMode);
+        if ("type".equalsIgnoreCase(signatureMode) && signatureTypeText != null) {
+            payload.put("signatureTypedPreview", signatureTypeText.trim().substring(0, Math.min(80, signatureTypeText.trim().length())));
+        }
+        int ownerDocs = countValidFiles(request.getFiles("idSlot0"));
+        payload.put("ownerIdDocuments", ownerDocs);
+        for (int s = 1; s < guests; s++) {
+            payload.put("guest" + (s + 1) + "IdDocuments", countValidFiles(request.getFiles("idSlot" + s)));
+        }
+        session.setAttribute("acceptSign_" + bookingId, payload);
+        session.setAttribute("acceptSignComplete_" + bookingId, Boolean.TRUE);
+
         return "redirect:/checkin/confirmation?booking=" + bookingReference;
+    }
+
+    private String renderAcceptSignPage(
+            String bookingReference,
+            String bookingId,
+            String guestEmail,
+            Model model,
+            String formError) {
+
+        int id;
+        try {
+            id = Integer.parseInt(bookingId.trim());
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid booking.");
+            return "error";
+        }
+
+        Booking booking = supabaseService.getBookingById(id);
+        if (booking == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+        if (booking.getGuestEmail() == null
+                || !booking.getGuestEmail().trim().equalsIgnoreCase(guestEmail.trim())) {
+            model.addAttribute("error", "Email does not match this booking.");
+            return "error";
+        }
+
+        int numberOfGuests = booking.getNumberOfGuests() != null && booking.getNumberOfGuests() > 0
+                ? booking.getNumberOfGuests()
+                : 1;
+
+        List<Integer> slotIndices = new ArrayList<>();
+        for (int i = 0; i < numberOfGuests; i++) {
+            slotIndices.add(i);
+        }
+
+        model.addAttribute("bookingReference", bookingReference);
+        model.addAttribute("bookingId", bookingId);
+        model.addAttribute("guestEmail", guestEmail);
+        model.addAttribute("numberOfGuests", numberOfGuests);
+        model.addAttribute("guestSlotIndices", slotIndices);
+        if (formError != null && !formError.isBlank()) {
+            model.addAttribute("formError", formError);
+        }
+        return "accept-sign";
+    }
+
+    private String validateAcceptSignSubmission(
+            MultipartHttpServletRequest request,
+            boolean policiesAccepted,
+            String signatureMode,
+            String signatureDrawData,
+            String signatureTypeText,
+            int numberOfGuests) {
+
+        if (!policiesAccepted) {
+            return "Please confirm that you have read and agree to the hotel policies.";
+        }
+
+        if (countValidFiles(request.getFiles("idSlot0")) < 1) {
+            return "Please upload at least one valid ID or passport for the primary guest (Owner). Accepted: PDF, JPG, PNG.";
+        }
+
+        for (int s = 1; s < numberOfGuests; s++) {
+            if (countValidFiles(request.getFiles("idSlot" + s)) < 1) {
+                return "Please upload at least one valid ID or passport for Guest " + (s + 1) + ".";
+            }
+        }
+
+        String mode = signatureMode == null ? "" : signatureMode.trim().toLowerCase();
+        switch (mode) {
+            case "draw":
+                if (signatureDrawData == null || signatureDrawData.length() < 80
+                        || !signatureDrawData.startsWith("data:image/")) {
+                    return "Please draw your signature, or choose another signature method.";
+                }
+                break;
+            case "type":
+                if (signatureTypeText == null || signatureTypeText.trim().length() < 2) {
+                    return "Please type your full name as your signature.";
+                }
+                break;
+            case "upload":
+                MultipartFile sig = request.getFile("signatureUpload");
+                if (sig == null || sig.isEmpty() || !isAllowedIdFile(sig)) {
+                    return "Please upload your signature as PDF, JPG, or PNG.";
+                }
+                break;
+            default:
+                return "Please choose a signature method: Draw, Type, or Upload.";
+        }
+        return null;
+    }
+
+    private static int countValidFiles(List<MultipartFile> files) {
+        if (files == null) {
+            return 0;
+        }
+        int c = 0;
+        for (MultipartFile f : files) {
+            if (isAllowedIdFile(f)) {
+                c++;
+            }
+        }
+        return c;
+    }
+
+    private static boolean isAllowedIdFile(MultipartFile f) {
+        if (f == null || f.isEmpty()) {
+            return false;
+        }
+        long max = 10L * 1024 * 1024;
+        if (f.getSize() > max) {
+            return false;
+        }
+        String fn = f.getOriginalFilename();
+        if (fn == null) {
+            return false;
+        }
+        int dot = fn.lastIndexOf('.');
+        if (dot < 0) {
+            return false;
+        }
+        String ext = fn.substring(dot + 1).toLowerCase();
+        return "pdf".equals(ext) || "jpg".equals(ext) || "jpeg".equals(ext) || "png".equals(ext);
     }
 
     private String renderUpgradeRoomPage(
