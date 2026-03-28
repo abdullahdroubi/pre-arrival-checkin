@@ -218,47 +218,30 @@
         </div>
 
         <h1 class="page-title">Your Room &amp; Upgrade Options</h1>
-        <p class="text-muted">Select an upgrade offer or skip if you prefer your current room.</p>
+        <p class="text-muted" th:text="${currencyNote}">Prices are in Jordanian Dinar (JD).</p>
 
-        <form th:action="@{/checkin/upgrade-room/submit}" method="post">
+        <div th:if="${upgradeError != null}" class="alert alert-warning" role="alert" th:text="${upgradeError}">
+        </div>
+
+        <form th:if="${upgradeOptions != null && !upgradeOptions.isEmpty()}"
+              th:action="@{/checkin/upgrade-room/submit}" method="post">
             <input type="hidden" th:name="bookingReference" th:value="${bookingReference}">
             <input type="hidden" th:name="bookingId" th:value="${bookingId}">
             <input type="hidden" th:name="guestEmail" th:value="${guestEmail}">
 
             <div class="row g-3">
-                <!-- Offer 1 -->
-                <div class="col-12 col-md-6 col-lg-4">
-                    <input type="radio" id="offerStandard" name="upgradeOffer" value="standard" checked>
-                    <label for="offerStandard" class="upgrade-card">
-                        <img class="offer-image" src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80" alt="Room">
-                        <div class="offer-title">Your Current Room</div>
-                        <div class="offer-subtitle">Keep the same room and features</div>
-                        <div class="offer-price mt-2">¥ 0</div>
-                        <div class="offer-badge">Current selection</div>
-                    </label>
-                </div>
-
-                <!-- Offer 2 -->
-                <div class="col-12 col-md-6 col-lg-4">
-                    <input type="radio" id="offerSave20" name="upgradeOffer" value="save20">
-                    <label for="offerSave20" class="upgrade-card">
-                        <img class="offer-image" src="https://images.unsplash.com/photo-1551887373-6dbbca3f4c5e?auto=format&fit=crop&w=900&q=80" alt="Upgrade room">
-                        <div class="offer-title">Deluxe City View Room</div>
-                        <div class="offer-subtitle">Better view and premium comfort</div>
-                        <div class="offer-price mt-2">¥ 3,250</div>
-                        <div class="offer-badge"><i class="fas fa-tags"></i> Save 20%</div>
-                    </label>
-                </div>
-
-                <!-- Offer 3 -->
-                <div class="col-12 col-md-6 col-lg-4">
-                    <input type="radio" id="offerBestValue" name="upgradeOffer" value="bestValue">
-                    <label for="offerBestValue" class="upgrade-card">
-                        <img class="offer-image" src="https://images.unsplash.com/photo-1549187774-b4e9b0445b41?auto=format&fit=crop&w=900&q=80" alt="Upgrade room">
-                        <div class="offer-title">Deluxe City View Room</div>
-                        <div class="offer-subtitle">Best value upgrade offer</div>
-                        <div class="offer-price mt-2">¥ 3,250</div>
-                        <div class="offer-badge"><i class="fas fa-star"></i> Best Value</div>
+                <div class="col-12 col-md-6 col-lg-4" th:each="opt, iter : ${upgradeOptions}">
+                    <input type="radio" th:id="${'offer' + iter.index}" name="upgradeOffer"
+                           th:value="${opt.radioValue}" th:checked="${opt.currentSelection}">
+                    <label th:for="${'offer' + iter.index}" class="upgrade-card">
+                        <img class="offer-image" th:src="${opt.imageUrl}" alt="Room">
+                        <div class="offer-title" th:text="${opt.title}">Room</div>
+                        <div class="offer-subtitle" th:text="${opt.subtitle}">Details</div>
+                        <div class="offer-price mt-2" th:text="${opt.formattedTotal}">0.00 JD</div>
+                        <div class="offer-badge" th:if="${opt.offerBadge != null}">
+                            <i class="fas fa-tags"></i>
+                            <span th:text="${opt.offerBadge}">Offer</span>
+                        </div>
                     </label>
                 </div>
             </div>
@@ -268,10 +251,18 @@
                     Skip
                 </button>
                 <button type="submit" class="btn-upgrade">
-                    Upgrade confirmation
+                    Continue
                 </button>
             </div>
         </form>
+
+        <div th:if="${upgradeOptions == null || upgradeOptions.isEmpty()}" class="alert alert-info">
+            No bookable rooms are listed for your stay right now. Use Skip to continue.
+        </div>
+
+        <div th:if="${upgradeOptions == null || upgradeOptions.isEmpty()}" class="actions-row">
+            <button type="submit" class="btn-upgrade" form="skipForm">Skip</button>
+        </div>
 
         <form id="skipForm" th:action="@{/checkin/upgrade-room/skip}" method="post" style="display:none;">
             <input type="hidden" th:name="bookingReference" th:value="${bookingReference}">

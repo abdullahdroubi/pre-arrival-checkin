@@ -10,6 +10,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petrabooking.checkin.model.Booking;
 import com.petrabooking.checkin.model.Hotel;
+import com.petrabooking.checkin.model.UpgradeRoomOption;
 import com.petrabooking.checkin.service.SupabaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -697,10 +698,8 @@ public class CheckInController {
             @RequestParam String bookingId,
             @RequestParam String guestEmail,
             Model model) {
-        model.addAttribute("bookingReference", bookingReference);
-        model.addAttribute("bookingId", bookingId);
-        model.addAttribute("guestEmail", guestEmail);
-        return "upgrade-room";
+
+        return renderUpgradeRoomPage(bookingReference, bookingId, guestEmail, model, null);
     }
 
     /**
@@ -712,12 +711,54 @@ public class CheckInController {
             @RequestParam String bookingId,
             @RequestParam String guestEmail,
             @RequestParam(required = false) String upgradeOffer,
-            HttpSession session) {
+            HttpSession session,
+            Model model) {
 
-        if (upgradeOffer != null && !upgradeOffer.isBlank()) {
-            session.setAttribute("upgradeOffer_" + bookingId, upgradeOffer);
+        int id;
+        try {
+            id = Integer.parseInt(bookingId.trim());
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid booking.");
+            return "error";
         }
 
+        Booking booking = supabaseService.getBookingById(id);
+        if (booking == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+        if (booking.getGuestEmail() == null
+                || !booking.getGuestEmail().trim().equalsIgnoreCase(guestEmail.trim())) {
+            model.addAttribute("error", "Email does not match this booking.");
+            return "error";
+        }
+
+        String choice = upgradeOffer == null ? "" : upgradeOffer.trim();
+        if (choice.isEmpty() || "keep".equalsIgnoreCase(choice)) {
+            session.setAttribute("upgradeOffer_" + bookingId, "keep");
+            return "redirect:/checkin/confirmation?booking=" + bookingReference;
+        }
+
+        int newRoomId;
+        try {
+            newRoomId = Integer.parseInt(choice);
+        } catch (NumberFormatException e) {
+            return renderUpgradeRoomPage(bookingReference, bookingId, guestEmail, model,
+                    "Invalid selection. Please choose a room again.");
+        }
+
+        if (booking.getRoomId() != null && newRoomId == booking.getRoomId()) {
+            session.setAttribute("upgradeOffer_" + bookingId, "keep");
+            return "redirect:/checkin/confirmation?booking=" + bookingReference;
+        }
+
+        boolean ok = supabaseService.updateBookingRoomAndTotal(id, newRoomId);
+        if (!ok) {
+            return renderUpgradeRoomPage(bookingReference, bookingId, guestEmail, model,
+                    "That room is no longer available. Please pick another room or keep your current one.");
+        }
+
+        session.setAttribute("upgradeOffer_" + bookingId, "room:" + newRoomId);
         return "redirect:/checkin/confirmation?booking=" + bookingReference;
     }
 
@@ -733,6 +774,49 @@ public class CheckInController {
 
         session.setAttribute("upgradeOffer_" + bookingId, "skipped");
         return "redirect:/checkin/confirmation?booking=" + bookingReference;
+    }
+
+    private String renderUpgradeRoomPage(
+            String bookingReference,
+            String bookingId,
+            String guestEmail,
+            Model model,
+            String upgradeError) {
+
+        int id;
+        try {
+            id = Integer.parseInt(bookingId.trim());
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid booking.");
+            return "error";
+        }
+
+        Booking booking = supabaseService.getBookingById(id);
+        if (booking == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+        if (booking.getGuestEmail() == null
+                || !booking.getGuestEmail().trim().equalsIgnoreCase(guestEmail.trim())) {
+            model.addAttribute("error", "Email does not match this booking.");
+            return "error";
+        }
+
+        List<UpgradeRoomOption> options = supabaseService.buildUpgradeRoomOptions(booking);
+        boolean anyCurrent = options.stream().anyMatch(UpgradeRoomOption::isCurrentSelection);
+        if (!anyCurrent && !options.isEmpty()) {
+            options.get(0).setCurrentSelection(true);
+        }
+
+        model.addAttribute("bookingReference", bookingReference);
+        model.addAttribute("bookingId", bookingId);
+        model.addAttribute("guestEmail", guestEmail);
+        model.addAttribute("upgradeOptions", options);
+        model.addAttribute("currencyNote", "Prices are in Jordanian Dinar (JD).");
+        if (upgradeError != null && !upgradeError.isBlank()) {
+            model.addAttribute("upgradeError", upgradeError);
+        }
+        return "upgrade-room";
     }
 
     /**
