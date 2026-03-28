@@ -158,20 +158,20 @@
                 </div>
             </div>
 
-            <div class="form-check mt-4">
-                <input class="form-check-input" type="checkbox" name="policiesAccepted" id="policiesAccepted" value="true">
-                <label class="form-check-label fw-semibold" for="policiesAccepted">
+            <div class="accept-policy-check mt-4">
+                <input class="accept-policy-input" type="checkbox" name="policiesAccepted" id="policiesAccepted" value="true">
+                <label class="accept-policy-label" for="policiesAccepted">
                     I have read, understood, and agree to the hotel’s policies.
                 </label>
             </div>
         </div>
 
         <!-- ID Upload -->
-        <div class="section-card">
-            <h2 class="section-title">Upload Your ID / Passport</h2>
-            <p class="section-sub">We use this to verify your identity securely. Documents are transmitted over HTTPS; retention follows hotel policy.</p>
+        <div class="section-card accept-id-section">
+            <h2 class="section-title accept-section-heading">Upload your ID or passport</h2>
+            <p class="section-sub">We verify your identity securely. Files are sent over HTTPS; retention follows hotel policy.</p>
 
-            <ul class="nav nav-pills guest-tabs gap-2 my-3 flex-wrap" id="guestTab" role="tablist">
+            <ul class="nav nav-pills accept-guest-tabs gap-2 my-3 flex-wrap" id="guestTab" role="tablist">
                 <li class="nav-item" th:each="guestIdx, giter : ${guestSlotIndices}">
                     <button type="button" class="nav-link" th:classappend="${giter.first} ? 'active'"
                             th:id="${'guest-tab-' + guestIdx}"
@@ -183,32 +183,39 @@
                 <div th:each="guestIdx, giter : ${guestSlotIndices}"
                      class="tab-pane fade" th:classappend="${giter.first} ? 'show active'"
                      th:id="${'guest-pane-' + guestIdx}" role="tabpanel">
-                    <div class="drop-zone id-drop" th:attr="data-slot=${guestIdx}">
-                        <i class="fas fa-cloud-arrow-up fa-2x text-secondary mb-2"></i>
-                        <p class="mb-1 fw-semibold">Drag and drop your ID / Passport</p>
-                        <p class="small text-muted mb-3">Or</p>
-                        <div class="d-flex flex-wrap justify-content-center gap-2">
-                            <label class="btn btn-teal mb-0"><i class="fas fa-file-arrow-up me-1"></i> Choose file
-                                <input type="file" class="d-none id-file-input" th:name="${'idSlot' + guestIdx}"
-                                       multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-                            </label>
-                            <label class="btn btn-outline-navy mb-0"><i class="fas fa-camera me-1"></i> Take photo
-                                <input type="file" class="d-none id-camera-input" accept="image/*" capture="environment">
-                            </label>
+                    <div class="drop-zone id-drop accept-id-drop" th:attr="data-slot=${guestIdx}">
+                        <div class="accept-id-drop-inner">
+                            <div class="accept-id-drop-icon" aria-hidden="true">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                            </div>
+                            <div class="accept-id-drop-main">
+                                <p class="accept-id-drop-title">Drag and drop files here</p>
+                                <p class="accept-id-drop-hint text-muted">ID or passport — PDF, JPG, or PNG (max 10 MB each)</p>
+                                <div class="accept-id-drop-actions">
+                                    <label class="btn btn-id-upload mb-0">
+                                        <i class="fas fa-file-arrow-up me-2"></i>Choose file
+                                        <input type="file" class="d-none id-file-input" th:name="${'idSlot' + guestIdx}"
+                                               multiple accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+                                    </label>
+                                    <label class="btn btn-id-camera mb-0">
+                                        <i class="fas fa-camera me-2"></i>Take photo
+                                        <input type="file" class="d-none id-camera-input" accept="image/*" capture="environment">
+                                    </label>
+                                </div>
+                            </div>
                         </div>
-                        <p class="small text-muted mt-3 mb-0">Supported formats: PDF, JPG, PNG (max 10 MB each)</p>
                     </div>
-                    <ul class="list-group list-group-flush mt-2 small id-file-list" th:id="${'id-list-' + guestIdx}"></ul>
+                    <ul class="list-group list-group-flush mt-3 small id-file-list accept-id-file-list" th:id="${'id-list-' + guestIdx}"></ul>
                 </div>
             </div>
         </div>
 
         <!-- Signature -->
-        <div class="section-card">
-            <h2 class="section-title">Your Electronic Signature</h2>
-            <p class="section-sub">Please provide your signature to confirm your agreement with the policies.</p>
+        <div class="section-card accept-sig-section">
+            <h2 class="section-title accept-section-heading">Your electronic signature</h2>
+            <p class="section-sub">Sign to confirm you agree with the policies above.</p>
 
-            <ul class="nav nav-tabs sig-tabs border-0 mt-3" id="sigTab" role="tablist">
+            <ul class="nav nav-tabs accept-sig-tabs border-0 mt-3" id="sigTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" type="button" id="sig-tab-draw" data-bs-toggle="tab" data-bs-target="#sig-draw" data-mode="draw" role="tab">
                         <i class="fas fa-pen me-1"></i> Draw
@@ -238,12 +245,13 @@
                            placeholder="Type your full name as your signature" autocomplete="name">
                 </div>
                 <div class="tab-pane fade" id="sig-upload" role="tabpanel">
-                    <div class="drop-zone">
-                        <label class="btn btn-teal mb-0"><i class="fas fa-file-arrow-up me-1"></i> Choose signature file
+                    <div class="drop-zone accept-sig-upload-zone">
+                        <label class="btn btn-id-upload mb-0">
+                            <i class="fas fa-file-arrow-up me-2"></i>Choose signature file
                             <input type="file" name="signatureUpload" id="signatureUpload" class="d-none"
                                    accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
                         </label>
-                        <p class="small text-muted mt-2 mb-0" id="sigUploadName"></p>
+                        <p class="small text-muted mt-3 mb-0" id="sigUploadName"></p>
                     </div>
                 </div>
             </div>
@@ -252,8 +260,8 @@
             </p>
         </div>
 
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-continue btn-lg">Continue</button>
+        <div class="accept-sign-actions text-center mt-4 pt-2">
+            <button type="submit" class="btn btn-continue btn-lg px-5">Continue</button>
         </div>
     </form>
 </div>
@@ -277,7 +285,7 @@
         ctx.scale(dpr, dpr);
         ctx.lineWidth = 2;
         ctx.lineCap = 'round';
-        ctx.strokeStyle = '#1e3a5f';
+        ctx.strokeStyle = '#1a2220';
     }
     resizeCanvas();
 
