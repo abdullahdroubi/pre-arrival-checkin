@@ -201,10 +201,9 @@ public class SupabaseService {
     }
 
     /**
-     * Rooms free for the stay, excluding other guests' overlapping confirmed bookings.
+     * Rooms at {@code hotelId} free for the stay, excluding other guests' overlapping confirmed bookings.
      * The current booking is excluded from overlap so the guest's own room stays selectable.
-     */
-    /**
+     *
      * @param guestCurrentRoomId if set, that room is included even when status is not {@code available}
      *                           (guest already holds it for this stay).
      */
@@ -221,6 +220,9 @@ public class SupabaseService {
         List<JsonNode> result = new ArrayList<>();
         for (JsonNode room : rooms) {
             if (!room.has("id")) {
+                continue;
+            }
+            if (!roomBelongsToHotel(room, hotelId)) {
                 continue;
             }
             int roomId = room.get("id").asInt();
@@ -276,8 +278,9 @@ public class SupabaseService {
         }
 
         if (currentRoomId != null && rows.stream().noneMatch(r -> r.roomId == currentRoomId)) {
-            JsonNode fallback = fetchRoomByIdWithTypes(currentRoomId);
-            if (fallback != null && fallback.has("room_type_id") && !fallback.get("room_type_id").isNull()) {
+            JsonNode fallback = fetchRoomByIdWithTypesForHotel(currentRoomId, hotelId);
+            if (fallback != null && roomBelongsToHotel(fallback, hotelId)
+                    && fallback.has("room_type_id") && !fallback.get("room_type_id").isNull()) {
                 int rtId = fallback.get("room_type_id").asInt();
                 double total = priceCache.computeIfAbsent(rtId,
                         id -> sumPricingForRoomType(id, checkIn, checkOut));
@@ -381,14 +384,19 @@ public class SupabaseService {
 
         boolean allowed = false;
         int roomTypeId = 0;
+        int expectedHotelId = booking.getHotelId();
         for (JsonNode room : available) {
-            if (room.get("id").asInt() == newRoomId) {
-                allowed = true;
-                if (room.has("room_type_id") && !room.get("room_type_id").isNull()) {
-                    roomTypeId = room.get("room_type_id").asInt();
-                }
+            if (room.get("id").asInt() != newRoomId) {
+                continue;
+            }
+            if (!roomBelongsToHotel(room, expectedHotelId)) {
                 break;
             }
+            allowed = true;
+            if (room.has("room_type_id") && !room.get("room_type_id").isNull()) {
+                roomTypeId = room.get("room_type_id").asInt();
+            }
+            break;
         }
         if (!allowed || roomTypeId == 0) {
             return false;
@@ -415,10 +423,14 @@ public class SupabaseService {
         }
     }
 
-    private JsonNode fetchRoomByIdWithTypes(int roomId) {
+    /**
+     * Loads a room only if it belongs to {@code hotelId} (same hotel as the booking).
+     */
+    private JsonNode fetchRoomByIdWithTypesForHotel(int roomId, int hotelId) {
         String base = supabaseConfig.getSupabaseUrl() + "/rest/v1/rooms";
         UriComponentsBuilder b = UriComponentsBuilder.fromUriString(base)
                 .queryParam("id", "eq." + roomId)
+                .queryParam("hotel_id", "eq." + hotelId)
                 .queryParam("select", "*,room_types(*)");
 
         HttpEntity<String> entity = new HttpEntity<>(createServiceHeaders());
@@ -433,9 +445,16 @@ public class SupabaseService {
                 return arr.get(0);
             }
         } catch (Exception e) {
-            System.out.println("[SUPABASE] fetchRoomByIdWithTypes failed: " + e.getMessage());
+            System.out.println("[SUPABASE] fetchRoomByIdWithTypesForHotel failed: " + e.getMessage());
         }
         return null;
+    }
+
+    private static boolean roomBelongsToHotel(JsonNode room, int expectedHotelId) {
+        if (room == null || !room.has("hotel_id") || room.get("hotel_id").isNull()) {
+            return false;
+        }
+        return room.get("hotel_id").asInt() == expectedHotelId;
     }
 
     private List<JsonNode> fetchRoomsWithTypes(int hotelId) {
