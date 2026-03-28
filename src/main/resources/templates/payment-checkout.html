@@ -1,55 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete payment - Pre-Arrival Check-In</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --teal: #00bcd4; --teal-bg: rgba(0,188,212,0.12); --dark-blue: #1e3a5f; --green: #4caf50; }
-        body { background: #eef1f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; min-height: 100vh; }
-        .bg-pattern { position: fixed; inset: 0; pointer-events: none; opacity: 0.05;
-            background: radial-gradient(circle at 95% 8%, var(--teal) 0, transparent 45%),
-            radial-gradient(circle at 5% 92%, var(--teal) 0, transparent 40%); }
-        .navbar-custom { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 14px 0; position: relative; z-index: 1; }
-        .progress-container { background: white; padding: 14px 10px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; position: relative; z-index: 1; }
-        .progress-steps { display: flex; justify-content: space-between; min-width: 680px; gap: 4px; }
-        .step { flex: 1; text-align: center; }
-        .step-circle { width: 32px; height: 32px; border-radius: 50%; background: #e0e0e0; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; border: 2px solid #e0e0e0; }
-        .step.completed .step-circle { background: var(--green); color: white; border-color: var(--green); }
-        .step.completed .step-circle::before { content: "✓"; }
-        .step.active .step-circle { background: var(--teal); color: white; border-color: var(--teal); }
-        .step-label { font-size: 9px; color: #666; line-height: 1.15; }
-        .step.active .step-label { color: var(--teal); font-weight: bold; }
-        .card-panel { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04); height: 100%; }
-        .row-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.92rem; color: #444; }
-        .row-line small { color: #888; font-weight: 400; }
-        .dashed { border-top: 2px dashed #e8e8e8; margin: 10px 0; }
-        .total-due { font-size: 1.35rem; font-weight: 900; color: var(--green); }
-        .trust-box { background: var(--teal-bg); border-radius: 12px; padding: 14px; margin-top: 16px; display: flex; gap: 12px; align-items: flex-start; }
-        .trust-box i { color: var(--teal); font-size: 1.4rem; margin-top: 2px; }
-        .method-card { border: 2px solid #e8e8e8; border-radius: 12px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-        .method-card.active { border-color: var(--teal); background: var(--teal-bg); }
-        .method-card .check { color: var(--green); opacity: 0; }
-        .method-card.active .check { opacity: 1; }
-        .btn-pay { background: var(--dark-blue); color: white; font-weight: 800; padding: 14px; border-radius: 12px; border: none; width: 100%; }
-        .btn-pay:hover { background: #2a4a6f; color: white; }
-        .page-title { font-weight: 800; font-size: 1.55rem; color: #222; }
-        .page-sub { color: #666; }
-    </style>
+    <title>Complete payment · Pre-arrival check-in</title>
+    <th:block th:replace="~{fragments/checkin-assets :: styles}"></th:block>
 </head>
-<body>
-<div class="bg-pattern"></div>
-<nav class="navbar-custom">
+<body class="chk-page payment-flow">
+<div class="bg-pattern" aria-hidden="true"></div>
+<nav class="navbar navbar-custom">
     <div class="container">
-        <span class="navbar-brand fw-bold" style="color: var(--teal);"><i class="fas fa-hotel me-1"></i> reterra Property Tech</span>
+        <span class="navbar-brand"><i class="fas fa-gem me-2 opacity-75"></i>reterra</span>
     </div>
 </nav>
 
-<div class="container py-4">
-    <div class="progress-container">
-        <div class="progress-steps">
+<div class="container py-4 position-relative">
+    <div class="progress-container" data-reveal style="overflow-x:auto;">
+        <div class="progress-steps" style="min-width:680px;">
             <div class="step completed"><div class="step-circle"></div><div class="step-label">Personal</div></div>
             <div class="step completed"><div class="step-circle"></div><div class="step-label">Further</div></div>
             <div class="step completed"><div class="step-circle"></div><div class="step-label">EAT</div></div>
@@ -60,14 +27,14 @@
         </div>
     </div>
 
-    <h1 class="page-title">Complete your payment</h1>
-    <p class="page-sub mb-4">Secure your booking now and save time at reception.</p>
+    <h1 class="page-title" data-reveal>Complete your payment</h1>
+    <p class="text-muted mb-4" data-reveal>Secure your booking now and save time at reception.</p>
 
-    <div th:if="${paymentFormError != null}" class="alert alert-warning" th:text="${paymentFormError}"></div>
+    <div th:if="${paymentFormError != null}" class="alert alert-warning" data-reveal th:text="${paymentFormError}"></div>
 
     <div class="row g-4">
         <div class="col-lg-5">
-            <div class="card-panel">
+            <div class="card-panel p-4 h-100" data-reveal>
                 <h3 class="h6 fw-bold mb-3">Payment summary</h3>
                 <div class="row-line"><span th:text="${roomCostLabel}">Room</span><span th:text="${lineRoomStay}">0 JD</span></div>
                 <div class="row-line"><span>Taxes &amp; fees</span><span th:text="${lineTaxesStay}">0 JD</span></div>
@@ -94,7 +61,7 @@
             </div>
         </div>
         <div class="col-lg-7">
-            <div class="card-panel">
+            <div class="card-panel p-4 h-100" data-reveal>
                 <h3 class="h6 fw-bold mb-3">Choose payment method</h3>
                 <div class="method-card active" id="mCard">
                     <div class="d-flex justify-content-between align-items-center">
@@ -139,5 +106,6 @@
         </div>
     </div>
 </div>
+<th:block th:replace="~{fragments/checkin-assets :: scripts}"></th:block>
 </body>
 </html>

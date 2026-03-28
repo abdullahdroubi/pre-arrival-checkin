@@ -1,0 +1,12 @@
+target/
+.git
+.gitignore
+.idea
+*.iml
+.dart_tool/
+build/
+**/node_modules/
+.mcps/
+tools/
+*.md
+HELP.md

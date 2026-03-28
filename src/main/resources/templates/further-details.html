@@ -1,238 +1,20 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Further Details - Pre-Arrival Check-In</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --teal: #00bcd4;
-        }
-        body {
-            background: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .navbar-custom {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 15px 0;
-        }
-        .progress-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .progress-steps {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-        .step {
-            flex: 1;
-            text-align: center;
-            position: relative;
-        }
-        .step-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            color: #999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            font-weight: bold;
-            border: 3px solid #e0e0e0;
-        }
-        .step.completed .step-circle {
-            background: #4caf50;
-            color: white;
-            border-color: #4caf50;
-        }
-        .step.completed .step-circle::before {
-            content: "✓";
-        }
-        .step.active .step-circle {
-            background: var(--teal);
-            color: white;
-            border-color: var(--teal);
-        }
-        .step-label {
-            font-size: 12px;
-            color: #666;
-        }
-        .step.active .step-label {
-            color: var(--teal);
-            font-weight: bold;
-        }
-        .step.completed .step-label {
-            color: #4caf50;
-            font-weight: bold;
-        }
-        .step-line {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            width: 100%;
-            height: 2px;
-            background: #e0e0e0;
-            z-index: -1;
-        }
-        .step.completed .step-line {
-            background: #4caf50;
-        }
-        .step:last-child .step-line {
-            display: none;
-        }
-        .form-container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .section-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-        }
-        .section-desc {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-        .form-group-custom {
-            margin-bottom: 30px;
-        }
-        .radio-group, .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .radio-option, .checkbox-option {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-        }
-        .radio-option:hover, .checkbox-option:hover {
-            border-color: var(--teal);
-            background: #f0fdfe;
-        }
-        .radio-option input[type="radio"], .checkbox-option input[type="checkbox"] {
-            margin-right: 10px;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-        .radio-option input[type="radio"]:checked + label,
-        .checkbox-option input[type="checkbox"]:checked + label {
-            color: var(--teal);
-            font-weight: 600;
-        }
-        .radio-option input[type="radio"]:checked ~ label,
-        .checkbox-option input[type="checkbox"]:checked ~ label {
-            color: var(--teal);
-            font-weight: 600;
-        }
-        .radio-option:has(input[type="radio"]:checked),
-        .checkbox-option:has(input[type="checkbox"]:checked) {
-            border-color: var(--teal);
-            background: #f0fdfe;
-        }
-        .form-control-custom {
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px 15px;
-            transition: all 0.3s;
-            resize: vertical;
-        }
-        .form-control-custom:focus {
-            border-color: var(--teal);
-            box-shadow: 0 0 0 3px rgba(0,188,212,0.1);
-            outline: none;
-        }
-        .char-count {
-            text-align: right;
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
-        }
-        .accessibility-link {
-            color: var(--teal);
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .accessibility-link:hover {
-            text-decoration: underline;
-        }
-        .accessibility-link i {
-            font-size: 18px;
-        }
-        .btn-back {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-right: 15px;
-        }
-        .btn-back:hover {
-            background: #5a6268;
-        }
-        .btn-continue {
-            background: #1e3a5f;
-            color: white;
-            border: none;
-            padding: 15px 50px;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            float: right;
-        }
-        .btn-continue:hover {
-            background: #2a4a6f;
-        }
-        .btn-container {
-            clear: both;
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-        }
-    </style>
+    <title>Further details · Pre-arrival check-in</title>
+    <th:block th:replace="~{fragments/checkin-assets :: styles}"></th:block>
 </head>
-<body>
-<!-- Navbar -->
+<body class="chk-page">
 <nav class="navbar navbar-custom">
     <div class="container">
-        <a class="navbar-brand" href="#" style="color: var(--primary-color); font-weight: bold;">
-            <i class="fas fa-hotel"></i> reterra Property Tech
-        </a>
+        <a class="navbar-brand" href="#"><i class="fas fa-gem me-2 opacity-75"></i>reterra</a>
     </div>
 </nav>
 
-<div class="container mt-4">
-    <!-- Progress Bar -->
-    <div class="progress-container">
+<div class="container mt-4 pb-5">
+    <div class="progress-container" data-reveal>
         <div class="progress-steps">
             <div class="step completed">
                 <div class="step-circle"></div>
@@ -272,7 +54,7 @@
         <input type="hidden" th:name="bookingId" th:value="${bookingId}">
         <input type="hidden" th:name="guestEmail" th:value="${guestEmail}">
 
-        <div class="form-container">
+        <div class="form-container" data-reveal>
             <h2 class="form-section-title">Further details</h2>
             <p class="form-section-desc">Help us personalize your stay by sharing your preferences and needs.</p>
 
@@ -408,7 +190,7 @@
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<th:block th:replace="~{fragments/checkin-assets :: scripts}"></th:block>
 <script>
     // Character counters
     function updateCharCount(textareaId, countId) {

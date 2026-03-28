@@ -1,0 +1,22 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# After the first successful deploy, set CHECKIN_WEBSITE_URL in the dashboard
+# to your public URL (e.g. https://pre-arrival-checkin.onrender.com).
+
+services:
+  - type: web
+    name: pre-arrival-checkin
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: CHECKIN_WEBSITE_URL
+        sync: false
