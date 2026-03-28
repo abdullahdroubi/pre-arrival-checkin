@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Locale;
+import java.time.temporal.ChronoUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petrabooking.checkin.model.Booking;
@@ -32,6 +34,7 @@ public class CheckInController {
     public String showHomePage(
             @RequestParam String booking,
             @RequestParam String email,
+            HttpSession session,
             Model model) {
 
         System.out.println("[CHECKIN] /checkin booking=" + booking + ", email=" + email);
@@ -69,6 +72,8 @@ public class CheckInController {
         String formattedRef = formatReservationNumber(bookingData.getBookingReference());
         model.addAttribute("formattedReservationNumber", formattedRef);
 
+        ensureBookingBaselineTotal(session, bookingData);
+
         return "home";
     }
 
@@ -76,6 +81,7 @@ public class CheckInController {
     public String showCheckInForm(
             @RequestParam String booking,
             @RequestParam String email,
+            HttpSession session,
             Model model) {
 
         System.out.println("[CHECKIN] /checkin/form booking=" + booking + ", email=" + email);
@@ -127,6 +133,8 @@ public class CheckInController {
             numberOfGuests = 1;
         }
         model.addAttribute("numberOfGuests", numberOfGuests);
+
+        ensureBookingBaselineTotal(session, bookingData);
 
         return "checkin-form";
     }
@@ -204,7 +212,9 @@ public class CheckInController {
         checkInData.put("iqama_number", formData.get("iqamaNumber"));
         checkInData.put("submitted_guests_count", submittedGuests);
         checkInData.put("booked_guests_count", bookingData.getNumberOfGuests());
-        checkInData.put("requires_additional_payment", submittedGuests > bookingData.getNumberOfGuests());
+        int bookedGuestCount = bookingData.getNumberOfGuests() != null ? bookingData.getNumberOfGuests() : 1;
+        boolean extraGuestPayment = submittedGuests > bookedGuestCount;
+        checkInData.put("requires_additional_payment", extraGuestPayment);
         checkInData.put("submitted_at", java.time.LocalDateTime.now().toString());
 
         // Additional guests data (store as JSON array)
@@ -264,6 +274,11 @@ public class CheckInController {
         personalInfoData.put("iqamaNumber", formData.get("iqamaNumber"));
         personalInfoData.put("additionalGuests", additionalGuests);
         session.setAttribute("personalInfo_" + bookingId, personalInfoData);
+
+        session.setAttribute("extraGuestPayment_" + bookingId, extraGuestPayment);
+        session.setAttribute("extraGuestCount_" + bookingId, Math.max(0, submittedGuests - bookedGuestCount));
+        session.setAttribute("bookedGuestsAtStart_" + bookingId, bookedGuestCount);
+        session.setAttribute("submittedGuestsCount_" + bookingId, submittedGuests);
 
         // Submit to Supabase
         try {
@@ -740,6 +755,7 @@ public class CheckInController {
         String choice = upgradeOffer == null ? "" : upgradeOffer.trim();
         if (choice.isEmpty() || "keep".equalsIgnoreCase(choice)) {
             session.setAttribute("upgradeOffer_" + bookingId, "keep");
+            session.removeAttribute("upgradeDelta_" + bookingId);
             return redirectToAcceptSign(bookingReference, bookingId, guestEmail);
         }
 
@@ -753,9 +769,11 @@ public class CheckInController {
 
         if (booking.getRoomId() != null && newRoomId == booking.getRoomId()) {
             session.setAttribute("upgradeOffer_" + bookingId, "keep");
+            session.removeAttribute("upgradeDelta_" + bookingId);
             return redirectToAcceptSign(bookingReference, bookingId, guestEmail);
         }
 
+        Double totalBeforeUpgrade = booking.getTotalAmount();
         boolean ok = supabaseService.updateBookingRoomAndTotal(id, newRoomId);
         if (!ok) {
             return renderUpgradeRoomPage(bookingReference, bookingId, guestEmail, model,
@@ -763,6 +781,10 @@ public class CheckInController {
         }
 
         session.setAttribute("upgradeOffer_" + bookingId, "room:" + newRoomId);
+        Booking refreshed = supabaseService.getBookingById(id);
+        double newTotal = refreshed != null && refreshed.getTotalAmount() != null ? refreshed.getTotalAmount() : 0;
+        double oldTotal = totalBeforeUpgrade != null ? totalBeforeUpgrade : 0;
+        session.setAttribute("upgradeDelta_" + bookingId, Math.max(0, newTotal - oldTotal));
         return redirectToAcceptSign(bookingReference, bookingId, guestEmail);
     }
 
@@ -777,6 +799,7 @@ public class CheckInController {
             HttpSession session) {
 
         session.setAttribute("upgradeOffer_" + bookingId, "skipped");
+        session.removeAttribute("upgradeDelta_" + bookingId);
         return redirectToAcceptSign(bookingReference, bookingId, guestEmail);
     }
 
@@ -856,7 +879,132 @@ public class CheckInController {
         session.setAttribute("acceptSign_" + bookingId, payload);
         session.setAttribute("acceptSignComplete_" + bookingId, Boolean.TRUE);
 
-        return "redirect:/checkin/confirmation?booking=" + bookingReference;
+        return redirectToPayment(bookingReference, bookingId, guestEmail);
+    }
+
+    private String redirectToPayment(String bookingReference, String bookingId, String guestEmail) {
+        return "redirect:" + UriComponentsBuilder.fromPath("/checkin/payment")
+                .queryParam("bookingReference", bookingReference)
+                .queryParam("bookingId", bookingId)
+                .queryParam("guestEmail", guestEmail)
+                .build()
+                .toUriString();
+    }
+
+    @GetMapping("/payment")
+    public String showPayment(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            HttpSession session,
+            Model model) {
+
+        int id;
+        try {
+            id = Integer.parseInt(bookingId.trim());
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid booking.");
+            return "error";
+        }
+        if (!Boolean.TRUE.equals(session.getAttribute("acceptSignComplete_" + bookingId))) {
+            model.addAttribute("error", "Please complete Accept & Sign before payment.");
+            return "error";
+        }
+
+        Booking booking = supabaseService.getBookingById(id);
+        if (booking == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+        if (booking.getGuestEmail() == null
+                || !booking.getGuestEmail().trim().equalsIgnoreCase(guestEmail.trim())) {
+            model.addAttribute("error", "Email does not match this booking.");
+            return "error";
+        }
+
+        boolean needsPayMore = needsAdditionalPayment(session, bookingId);
+        populatePaymentModel(booking, bookingReference, bookingId, guestEmail, session, model);
+        return needsPayMore ? "payment-checkout" : "payment-summary";
+    }
+
+    @PostMapping("/payment/simulate-pay")
+    public String simulatePayment(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            @RequestParam(required = false) String cardNumber,
+            @RequestParam(required = false) String expiry,
+            @RequestParam(required = false) String cvv,
+            HttpSession session,
+            Model model) {
+
+        int id;
+        try {
+            id = Integer.parseInt(bookingId.trim());
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid booking.");
+            return "error";
+        }
+        if (!Boolean.TRUE.equals(session.getAttribute("acceptSignComplete_" + bookingId))) {
+            model.addAttribute("error", "Please complete Accept & Sign before payment.");
+            return "error";
+        }
+        if (!needsAdditionalPayment(session, bookingId)) {
+            return "redirect:/checkin/confirmation?booking=" + bookingReference;
+        }
+
+        String digits = cardNumber == null ? "" : cardNumber.replaceAll("\\D", "");
+        String exp = expiry == null ? "" : expiry.trim();
+        String cv = cvv == null ? "" : cvv.trim();
+        if (digits.length() < 12 || !exp.matches("\\d{2}/\\d{2}")
+                || !cv.matches("\\d{3,4}")) {
+            Booking booking = supabaseService.getBookingById(id);
+            if (booking == null) {
+                model.addAttribute("error", "Booking not found.");
+                return "error";
+            }
+            model.addAttribute("paymentFormError", "Please enter a valid card number, MM/YY expiry, and CVV.");
+            populatePaymentModel(booking, bookingReference, bookingId, guestEmail, session, model);
+            return "payment-checkout";
+        }
+
+        session.setAttribute("paymentCompleted_" + bookingId, Boolean.TRUE);
+        return "redirect:" + UriComponentsBuilder.fromPath("/checkin/payment/confirmed")
+                .queryParam("bookingReference", bookingReference)
+                .queryParam("bookingId", bookingId)
+                .queryParam("guestEmail", guestEmail)
+                .build()
+                .toUriString();
+    }
+
+    @GetMapping("/payment/confirmed")
+    public String paymentConfirmed(
+            @RequestParam String bookingReference,
+            @RequestParam String bookingId,
+            @RequestParam String guestEmail,
+            HttpSession session,
+            Model model) {
+
+        int id;
+        try {
+            id = Integer.parseInt(bookingId.trim());
+        } catch (NumberFormatException e) {
+            model.addAttribute("error", "Invalid booking.");
+            return "error";
+        }
+        if (!Boolean.TRUE.equals(session.getAttribute("paymentCompleted_" + bookingId))) {
+            model.addAttribute("error", "Payment session not found. Please complete payment from the payment page.");
+            return "error";
+        }
+
+        Booking booking = supabaseService.getBookingById(id);
+        if (booking == null) {
+            model.addAttribute("error", "Booking not found.");
+            return "error";
+        }
+        populatePaymentModel(booking, bookingReference, bookingId, guestEmail, session, model);
+        model.addAttribute("confirmedView", true);
+        return "payment-confirmed";
     }
 
     private String renderAcceptSignPage(
@@ -983,6 +1131,124 @@ public class CheckInController {
         }
         String ext = fn.substring(dot + 1).toLowerCase();
         return "pdf".equals(ext) || "jpg".equals(ext) || "jpeg".equals(ext) || "png".equals(ext);
+    }
+
+    private void ensureBookingBaselineTotal(HttpSession session, Booking booking) {
+        if (booking == null || booking.getId() == null) {
+            return;
+        }
+        String bid = String.valueOf(booking.getId());
+        if (session.getAttribute("bookingBaselineTotal_" + bid) == null) {
+            double t = booking.getTotalAmount() != null ? booking.getTotalAmount() : 0;
+            session.setAttribute("bookingBaselineTotal_" + bid, t);
+        }
+    }
+
+    private boolean needsAdditionalPayment(HttpSession session, String bookingId) {
+        String up = (String) session.getAttribute("upgradeOffer_" + bookingId);
+        boolean upgraded = up != null && up.startsWith("room:");
+        Boolean ex = (Boolean) session.getAttribute("extraGuestPayment_" + bookingId);
+        return upgraded || Boolean.TRUE.equals(ex);
+    }
+
+    private void populatePaymentModel(
+            Booking booking,
+            String bookingReference,
+            String bookingId,
+            String guestEmail,
+            HttpSession session,
+            Model model) {
+
+        int nights = paymentNights(booking);
+        double bookingTotal = booking.getTotalAmount() != null ? booking.getTotalAmount() : 0;
+
+        model.addAttribute("bookingReference", bookingReference);
+        model.addAttribute("bookingId", bookingId);
+        model.addAttribute("guestEmail", guestEmail);
+        model.addAttribute("nights", nights);
+        model.addAttribute("roomCostLabel", "Room cost (" + nights + " nights)");
+
+        boolean needsPayMore = needsAdditionalPayment(session, bookingId);
+
+        double upgradeDelta = 0;
+        Object ud = session.getAttribute("upgradeDelta_" + bookingId);
+        if (ud instanceof Number) {
+            upgradeDelta = round2(((Number) ud).doubleValue());
+        }
+
+        int extraGuestCount = 0;
+        Object eg = session.getAttribute("extraGuestCount_" + bookingId);
+        if (eg instanceof Number) {
+            extraGuestCount = ((Number) eg).intValue();
+        }
+
+        double guestFee = round2(extraGuestCount * 55.0 * Math.max(1, nights));
+
+        if (!needsPayMore) {
+            double total = round2(bookingTotal);
+            double roomCost = round2(total * 0.78);
+            double taxes = round2(total * 0.13);
+            double service = round2(total * 0.05);
+            double discount = round2(total * 0.06);
+            double recomputed = round2(roomCost + taxes + service - discount);
+            roomCost = round2(roomCost + round2(total - recomputed));
+
+            model.addAttribute("lineRoom", formatJodAmount(roomCost));
+            model.addAttribute("lineTaxes", formatJodAmount(taxes));
+            model.addAttribute("lineService", formatJodAmount(service));
+            model.addAttribute("lineDiscount", formatJodAmount(discount));
+            model.addAttribute("totalAmount", formatJodAmount(total));
+            model.addAttribute("needsExtraPayment", false);
+        } else {
+            double addonSubtotal = round2(upgradeDelta + guestFee);
+            double addonTaxes = round2(addonSubtotal * 0.13);
+            double addonService = round2(addonSubtotal * 0.05);
+            double amountDue = round2(addonSubtotal + addonTaxes + addonService);
+
+            double stayRoom = round2(bookingTotal * 0.82);
+            double stayTax = round2(bookingTotal * 0.11);
+            double staySvc = round2(bookingTotal * 0.07);
+            double staySum = round2(stayRoom + stayTax + staySvc);
+            stayRoom = round2(stayRoom + round2(bookingTotal - staySum));
+
+            model.addAttribute("lineRoomStay", formatJodAmount(stayRoom));
+            model.addAttribute("lineTaxesStay", formatJodAmount(stayTax));
+            model.addAttribute("lineServiceStay", formatJodAmount(staySvc));
+            model.addAttribute("lineRoomUpgrade", upgradeDelta > 0.005 ? formatJodAmount(upgradeDelta) : null);
+            model.addAttribute("lineExtraGuests", extraGuestCount > 0 ? formatJodAmount(guestFee) : null);
+            model.addAttribute("extraGuestCount", extraGuestCount);
+            model.addAttribute("lineAddonTaxes", formatJodAmount(addonTaxes));
+            model.addAttribute("lineAddonService", formatJodAmount(addonService));
+            model.addAttribute("totalAmountDue", formatJodAmount(amountDue));
+            model.addAttribute("amountDueNumber", amountDue);
+
+            double combinedBase = round2(bookingTotal + guestFee);
+            double fullTax = round2(combinedBase * 0.13);
+            double fullSvc = round2(combinedBase * 0.05);
+            double grandReceipt = round2(combinedBase + fullTax + fullSvc);
+            model.addAttribute("lineAccommodationTotal", formatJodAmount(bookingTotal));
+            model.addAttribute("lineGuestSupplement", guestFee > 0.005 ? formatJodAmount(guestFee) : null);
+            model.addAttribute("lineFullTaxes", formatJodAmount(fullTax));
+            model.addAttribute("lineFullService", formatJodAmount(fullSvc));
+            model.addAttribute("totalPaidSummary", formatJodAmount(grandReceipt));
+            model.addAttribute("needsExtraPayment", true);
+        }
+    }
+
+    private static int paymentNights(Booking b) {
+        if (b.getCheckInDate() == null || b.getCheckOutDate() == null) {
+            return 1;
+        }
+        long n = ChronoUnit.DAYS.between(b.getCheckInDate(), b.getCheckOutDate());
+        return (int) Math.max(1, n);
+    }
+
+    private static double round2(double v) {
+        return Math.round(v * 100.0) / 100.0;
+    }
+
+    private static String formatJodAmount(double v) {
+        return String.format(Locale.US, "%,.2f JD", v);
     }
 
     private String renderUpgradeRoomPage(
