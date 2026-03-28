@@ -7,11 +7,7 @@
     <th:block th:replace="~{fragments/checkin-assets :: styles}"></th:block>
 </head>
 <body class="chk-page">
-<nav class="navbar navbar-custom">
-    <div class="container">
-        <a class="navbar-brand" href="#"><i class="fas fa-gem me-2 opacity-75"></i>reterra</a>
-    </div>
-</nav>
+<th:block th:replace="~{fragments/checkin-navbar :: nav(false)}"></th:block>
 
 <div class="container mt-4 pb-5">
     <div class="progress-container" data-reveal>
@@ -178,8 +174,7 @@
             </div>
         </div>
 
-        <!-- Navigation Buttons -->
-        <div class="btn-container">
+        <div class="chk-form-actions">
             <button type="button" class="btn btn-back" onclick="goBack()">
                 <i class="fas fa-arrow-left"></i> Back
             </button>

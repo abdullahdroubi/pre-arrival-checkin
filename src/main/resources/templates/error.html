@@ -8,11 +8,7 @@
 </head>
 <body class="chk-page">
 <div class="bg-pattern" aria-hidden="true"></div>
-<nav class="navbar navbar-custom">
-    <div class="container">
-        <span class="navbar-brand"><i class="fas fa-gem me-2 opacity-75"></i>reterra</span>
-    </div>
-</nav>
+<th:block th:replace="~{fragments/checkin-navbar :: nav(false)}"></th:block>
 
 <main class="container py-5 position-relative chk-page-shell chk-page-shell--narrow">
     <div class="alert alert-danger" data-reveal role="alert">

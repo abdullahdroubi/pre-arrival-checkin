@@ -6,17 +6,9 @@
     <title>Accept & sign · Pre-arrival check-in</title>
     <th:block th:replace="~{fragments/checkin-assets :: styles}"></th:block>
 </head>
-<body class="chk-page">
-<nav class="navbar navbar-custom">
-    <div class="container">
-        <a class="navbar-brand" href="#" style="color: var(--teal); font-weight: bold;">
-            <i class="fas fa-gem me-2 opacity-75"></i>reterra
-        </a>
-        <a href="#" class="back-link" onclick="history.back(); return false;">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
-    </div>
-</nav>
+<body class="chk-page accept-sign-page">
+<div class="bg-pattern" aria-hidden="true"></div>
+<th:block th:replace="~{fragments/checkin-navbar :: nav(true)}"></th:block>
 
 <div class="container mt-3 mb-5 pb-4">
     <div class="progress-container">

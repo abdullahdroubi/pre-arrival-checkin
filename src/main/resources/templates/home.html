@@ -8,21 +8,16 @@
 </head>
 <body class="chk-page">
 <header class="hotel-header">
-    <div class="container py-3">
-        <div class="row align-items-center g-3">
-            <div class="col-md-7">
-                <div th:if="${hotel.logoUrl}" data-reveal>
-                    <img th:src="${hotel.logoUrl}" th:alt="${hotel.name}" class="img-fluid hotel-logo" style="max-height: 72px; max-width: 220px; object-fit: contain;">
+    <div class="container py-3 py-md-4">
+        <div class="d-flex align-items-center gap-3 gap-md-4 flex-wrap" data-reveal>
+            <div class="hotel-header-brand d-flex align-items-center gap-3">
+                <div class="hotel-header-logo-frame" th:if="${hotel.logoUrl != null && !#strings.isEmpty(hotel.logoUrl)}">
+                    <img th:src="${hotel.logoUrl}" th:alt="${hotel.name}" class="hotel-header-logo" width="64" height="64" loading="lazy">
                 </div>
-                <div th:unless="${hotel.logoUrl}" data-reveal>
-                    <h2 class="text-white mb-0 fw-semibold" style="font-family: var(--chk-font-display);" th:text="${hotel.name}">Hotel</h2>
+                <div>
+                    <p class="text-white text-uppercase small mb-1 mb-md-2 opacity-75" style="letter-spacing: 0.14em; font-size: 0.7rem;">Welcome</p>
+                    <h2 class="text-white mb-0 fw-semibold hotel-header-title" th:text="${hotel.name}">Hotel</h2>
                 </div>
-            </div>
-            <div class="col-md-5 text-md-end" data-reveal="slide-left">
-                <label class="visually-hidden" for="langSelect">Language</label>
-                <select id="langSelect" class="form-select d-inline-block" style="max-width: 160px;" aria-label="Language">
-                    <option>English</option>
-                </select>
             </div>
         </div>
     </div>
@@ -42,35 +37,42 @@
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-9">
             <div class="chk-reservation-card mb-4" data-reveal>
-                <h3 class="h5 fw-semibold mb-4 pb-3 border-bottom" style="font-family: var(--chk-font-display); border-color: rgba(166,124,82,0.3) !important;">
-                    Your reservation
-                </h3>
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="mb-4">
+                <h3 class="chk-reservation-card-title h5 fw-semibold mb-0">Reservation summary</h3>
+                <p class="text-muted small mb-4 pb-3 border-bottom chk-reservation-sub">Review your stay details before you begin.</p>
+                <div class="chk-summary-grid">
+                    <div class="chk-summary-item">
+                        <div class="chk-summary-icon" aria-hidden="true"><i class="fas fa-hotel"></i></div>
+                        <div class="chk-summary-body">
                             <div class="chk-label">Hotel</div>
                             <div class="chk-value" th:text="${hotel.name}">Name</div>
-                            <div class="small text-muted mt-1" th:text="${hotel.address + ', ' + hotel.city + ', ' + hotel.country}">Address</div>
+                            <div class="chk-summary-meta" th:text="${hotel.address + ', ' + hotel.city + ', ' + hotel.country}">Address</div>
                             <a class="chk-map-link d-inline-block mt-2"
                                th:href="@{'https://www.google.com/maps/search/?api=1&query=' + ${hotel.address + ', ' + hotel.city + ', ' + hotel.country}}">
                                 View on map <i class="fas fa-arrow-up-right-from-square ms-1 small"></i>
                             </a>
                         </div>
-                        <div>
+                    </div>
+                    <div class="chk-summary-item">
+                        <div class="chk-summary-icon" aria-hidden="true"><i class="fas fa-hashtag"></i></div>
+                        <div class="chk-summary-body">
                             <div class="chk-label">Reservation</div>
                             <div class="chk-value" th:text="${formattedReservationNumber}">#0000</div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-4">
+                    <div class="chk-summary-item">
+                        <div class="chk-summary-icon" aria-hidden="true"><i class="fas fa-door-open"></i></div>
+                        <div class="chk-summary-body">
                             <div class="chk-label">Check-in</div>
                             <div class="chk-value" th:text="${#temporals.format(booking.checkInDate, 'MMMM d, yyyy')}">Date</div>
-                            <div class="small text-muted">From 3:00 PM</div>
+                            <div class="chk-summary-meta">From 3:00 PM</div>
                         </div>
-                        <div>
+                    </div>
+                    <div class="chk-summary-item">
+                        <div class="chk-summary-icon" aria-hidden="true"><i class="fas fa-door-closed"></i></div>
+                        <div class="chk-summary-body">
                             <div class="chk-label">Check-out</div>
                             <div class="chk-value" th:text="${#temporals.format(booking.checkOutDate, 'MMMM d, yyyy')}">Date</div>
-                            <div class="small text-muted">By 12:00 PM</div>
+                            <div class="chk-summary-meta">By 12:00 PM</div>
                         </div>
                     </div>
                 </div>

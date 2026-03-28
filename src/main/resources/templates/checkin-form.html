@@ -7,12 +7,7 @@
     <th:block th:replace="~{fragments/checkin-assets :: styles}"></th:block>
 </head>
 <body class="chk-page">
-<!-- Navbar -->
-<nav class="navbar navbar-custom">
-    <div class="container">
-        <a class="navbar-brand" href="#"><i class="fas fa-gem me-2 opacity-75"></i>reterra</a>
-    </div>
-</nav>
+<th:block th:replace="~{fragments/checkin-navbar :: nav(false)}"></th:block>
 
 <div class="container mt-4 pb-5">
     <div class="progress-container" data-reveal>
@@ -67,7 +62,7 @@
             <h2 class="form-section-title">Personal Information</h2>
             <p class="form-section-desc">Please provide your details to begin the check-in process. All information is securely encrypted.</p>
 
-            <div class="row">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="form-group-custom">
                         <label class="form-label-custom">
@@ -98,23 +93,25 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="form-group-custom">
                         <label class="form-label-custom">
                             Phone number <span class="required">*</span>
                         </label>
                         <div class="phone-input-group">
-                            <select class="form-select country-code-select" name="countryCode">
-                                <option value="+966" selected>🇸🇦 +966</option>
-                                <option value="+1">🇺🇸 +1</option>
-                                <option value="+44">🇬🇧 +44</option>
-                                <option value="+971">🇦🇪 +971</option>
-                                <option value="+20">🇪🇬 +20</option>
-                                <option value="+962">🇯🇴 +962</option>
-                            </select>
+                            <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="countryCode" data-value="+966">
+                                <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox">
+                                    <span class="chk-combo-btn-text">Saudi Arabia +966</span>
+                                    <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                                </button>
+                                <div class="chk-combo-panel" hidden aria-hidden="true">
+                                    <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
+                                    <ul class="chk-combo-list" role="listbox"></ul>
+                                </div>
+                            </div>
                             <div class="phone-input-wrapper">
-                                <i class="fas fa-phone input-icon"></i>
+                                <i class="fas fa-phone input-icon" aria-hidden="true"></i>
                                 <input type="tel" class="form-control phone-number-input"
                                        th:name="guestPhone"
                                        placeholder="00 000 0000" required>
@@ -137,22 +134,25 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-4">
+            <div class="row g-3 align-items-start">
+                <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
-                        <label class="form-label-custom">
+                        <label class="form-label-custom" id="nat-label-main">
                             Nationality <span class="required">*</span>
                         </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-globe input-icon"></i>
-                            <select class="form-control form-control-custom" name="nationality" required>
-                                <option value="">Select nationality</option>
-                                <!-- Countries will be populated by JavaScript -->
-                            </select>
+                        <div class="chk-combo chk-combo-nationality" data-name="nationality" data-required>
+                            <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-main">
+                                <span class="chk-combo-btn-text">Select nationality</span>
+                                <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                            </button>
+                            <div class="chk-combo-panel" hidden aria-hidden="true">
+                                <input type="search" class="chk-combo-search form-control" placeholder="Search nationality" autocomplete="off">
+                                <ul class="chk-combo-list" role="listbox"></ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
                         <label class="form-label-custom">
                             Date of Birth <span class="required">*</span>
@@ -165,7 +165,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
                         <label class="form-label-custom">
                             Residency / Iqama Number
@@ -184,12 +184,10 @@
         <!-- Additional Guests Container -->
         <div id="additionalGuestsContainer"></div>
 
-        <!-- Add Guest Button -->
-        <button type="button" class="btn btn-add-guest" onclick="addGuest()">
-            <i class="fas fa-plus"></i> Add Another Guest
-        </button>
-
-        <div class="d-flex justify-content-end mt-4 pt-2">
+        <div class="chk-form-actions">
+            <button type="button" class="btn btn-add-guest" onclick="addGuest()">
+                <i class="fas fa-plus me-2"></i>Add another guest
+            </button>
             <button type="submit" class="btn btn-continue">
                 Continue <i class="fas fa-arrow-right ms-2"></i>
             </button>
@@ -198,26 +196,8 @@
 </div>
 
 <th:block th:replace="~{fragments/checkin-assets :: scripts}"></th:block>
+<script th:src="@{/js/checkin-combobox.js}" defer></script>
 <script>
-    // Countries list
-    const countries = [
-        "Afghanistan", "Albania", "Algeria", "Argentina", "Australia", "Austria", "Bahrain", "Bangladesh",
-        "Belgium", "Brazil", "Canada", "China", "Colombia", "Denmark", "Egypt", "Finland", "France", "Germany",
-        "Greece", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Italy", "Japan", "Jordan", "Kuwait",
-        "Lebanon", "Malaysia", "Mexico", "Morocco", "Netherlands", "New Zealand", "Norway", "Oman", "Pakistan",
-        "Philippines", "Poland", "Portugal", "Qatar", "Russia", "Saudi Arabia", "Singapore", "South Africa",
-        "South Korea", "Spain", "Sweden", "Switzerland", "Thailand", "Turkey", "UAE", "UK", "USA", "Yemen"
-    ];
-
-    // Populate nationality dropdown
-    const nationalitySelect = document.querySelector('select[name="nationality"]');
-    countries.forEach(country => {
-        const option = document.createElement('option');
-        option.value = country;
-        option.textContent = country;
-        nationalitySelect.appendChild(option);
-    });
-
     let guestCount = 1;
     const bookedGuests = parseInt(document.querySelector('input[name="numberOfGuestsBooked"]').value || '1');
 
@@ -248,7 +228,7 @@
                     <i class="fas fa-times"></i> Remove
                 </button>
             </div>
-            <div class="row">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="form-group-custom">
                         <label class="form-label-custom">
@@ -276,21 +256,25 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <div class="form-group-custom">
                         <label class="form-label-custom">
                             Phone number
                         </label>
                         <div class="phone-input-group">
-                            <select class="form-select country-code-select" name="guest_${guestCount}_countryCode">
-                                <option value="+966" selected>🇸🇦 +966</option>
-                                <option value="+1">🇺🇸 +1</option>
-                                <option value="+44">🇬🇧 +44</option>
-                                <option value="+971">🇦🇪 +971</option>
-                            </select>
+                            <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="guest_${guestCount}_countryCode" data-value="+966">
+                                <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox">
+                                    <span class="chk-combo-btn-text">Saudi Arabia +966</span>
+                                    <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                                </button>
+                                <div class="chk-combo-panel" hidden aria-hidden="true">
+                                    <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
+                                    <ul class="chk-combo-list" role="listbox"></ul>
+                                </div>
+                            </div>
                             <div class="phone-input-wrapper">
-                                <i class="fas fa-phone input-icon"></i>
+                                <i class="fas fa-phone input-icon" aria-hidden="true"></i>
                                 <input type="tel" class="form-control phone-number-input"
                                        name="guest_${guestCount}_phone"
                                        placeholder="00 000 0000 (optional)">
@@ -312,22 +296,25 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-4">
+            <div class="row g-3 align-items-start">
+                <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
-                        <label class="form-label-custom">
+                        <label class="form-label-custom" id="nat-label-guest-${guestCount}">
                             Nationality <span class="required">*</span>
                         </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-globe input-icon"></i>
-                            <select class="form-control form-control-custom" name="guest_${guestCount}_nationality" required>
-                                <option value="">Select nationality</option>
-                                ${countries.map(c => `<option value="${c}">${c}</option>`).join('')}
-                            </select>
+                        <div class="chk-combo chk-combo-nationality" data-name="guest_${guestCount}_nationality" data-required>
+                            <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-guest-${guestCount}">
+                                <span class="chk-combo-btn-text">Select nationality</span>
+                                <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                            </button>
+                            <div class="chk-combo-panel" hidden aria-hidden="true">
+                                <input type="search" class="chk-combo-search form-control" placeholder="Search nationality" autocomplete="off">
+                                <ul class="chk-combo-list" role="listbox"></ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
                         <label class="form-label-custom">
                             Date of Birth <span class="required">*</span>
@@ -340,7 +327,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
                         <label class="form-label-custom">
                             Residency / Iqama Number
@@ -357,6 +344,9 @@
         `;
 
         container.appendChild(guestSection);
+        if (typeof window.initCheckinCombos === 'function') {
+            window.initCheckinCombos(guestSection);
+        }
         updateGuestCountWarning();
     }
 

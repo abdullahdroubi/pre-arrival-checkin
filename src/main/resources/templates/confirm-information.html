@@ -7,17 +7,7 @@
     <th:block th:replace="~{fragments/checkin-assets :: styles}"></th:block>
 </head>
 <body class="chk-page">
-    <!-- Navbar -->
-    <nav class="navbar navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-gem me-2 opacity-75"></i>reterra
-            </a>
-            <a href="#" class="back-link" onclick="goBack(); return false;">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-        </div>
-    </nav>
+    <th:block th:replace="~{fragments/checkin-navbar :: nav(true)}"></th:block>
 
     <div class="container mt-4">
         <!-- Progress Bar -->
@@ -73,8 +63,11 @@
                     <div class="info-content">
                         <div class="info-label">Hotel</div>
                         <div class="info-value">
-                            <span th:text="${hotel.name}">reterra Hotel</span>
-                            <a href="#" class="info-link">View on Map</a>
+                            <span th:text="${hotel.name}">Hotel</span>
+                            <a class="info-link d-inline-block ms-2"
+                               th:href="@{'https://www.google.com/maps/search/?api=1&query=' + ${hotel.address + ', ' + hotel.city + ', ' + hotel.country}}">
+                                View on map
+                            </a>
                         </div>
                         <div style="font-size: 14px; color: #666; margin-top: 5px;" 
                              th:text="${hotel.address + ', ' + hotel.city + ' ' + hotel.country}">

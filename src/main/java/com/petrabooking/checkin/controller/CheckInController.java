@@ -344,6 +344,7 @@ public class CheckInController {
         model.addAttribute("bookingReference", bookingReference);
         model.addAttribute("bookingId", bookingId);
         model.addAttribute("guestEmail", guestEmail);
+        attachHotelByBookingReference(bookingReference, model);
 
         return "further-details";
     }
@@ -423,6 +424,7 @@ public class CheckInController {
         model.addAttribute("bookingReference", bookingReference);
         model.addAttribute("bookingId", bookingId);
         model.addAttribute("guestEmail", guestEmail);
+        attachHotelByBookingReference(bookingReference, model);
 
         return "accessibility-form";
     }
@@ -519,6 +521,7 @@ public class CheckInController {
         model.addAttribute("guestEmail", guestEmail);
         model.addAttribute("checkInDate", bookingData.getCheckInDate().toString());
         model.addAttribute("checkInDateFormatted", checkInDateFormatted);
+        attachHotelFromBooking(bookingData, model);
 
         return "eat";
     }
@@ -1050,6 +1053,7 @@ public class CheckInController {
         if (formError != null && !formError.isBlank()) {
             model.addAttribute("formError", formError);
         }
+        attachHotelFromBooking(booking, model);
         return "accept-sign";
     }
 
@@ -1159,6 +1163,7 @@ public class CheckInController {
             HttpSession session,
             Model model) {
 
+        attachHotelFromBooking(booking, model);
         int nights = paymentNights(booking);
         double bookingTotal = booking.getTotalAmount() != null ? booking.getTotalAmount() : 0;
 
@@ -1291,6 +1296,7 @@ public class CheckInController {
         if (upgradeError != null && !upgradeError.isBlank()) {
             model.addAttribute("upgradeError", upgradeError);
         }
+        attachHotelFromBooking(booking, model);
         return "upgrade-room";
     }
 
@@ -1351,5 +1357,20 @@ public class CheckInController {
             return "****";
         }
         return "*******" + id.substring(id.length() - 4);
+    }
+
+    private void attachHotelFromBooking(Booking booking, Model model) {
+        if (booking == null || booking.getHotelId() == null) {
+            return;
+        }
+        Hotel hotel = supabaseService.getHotelById(booking.getHotelId());
+        if (hotel != null) {
+            model.addAttribute("hotel", hotel);
+        }
+    }
+
+    private void attachHotelByBookingReference(String bookingReference, Model model) {
+        Booking b = supabaseService.getBookingByReference(bookingReference);
+        attachHotelFromBooking(b, model);
     }
 }

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Hotel branding: logo (optional) + property name from booking -->
+<nav th:fragment="nav(showBack)" class="navbar navbar-custom">
+    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <a class="navbar-brand navbar-brand-hotel d-flex align-items-center gap-2 text-decoration-none" href="#">
+            <span class="navbar-hotel-logo-wrap" th:if="${hotel != null && hotel.logoUrl != null && !#strings.isEmpty(hotel.logoUrl)}">
+                <img th:src="${hotel.logoUrl}" th:alt="${hotel.name}" class="navbar-hotel-logo" width="40" height="40" loading="lazy">
+            </span>
+            <span class="navbar-hotel-name" th:text="${hotel != null ? hotel.name : 'Guest check-in'}">Hotel</span>
+        </a>
+        <a th:if="${showBack}" href="#" class="back-link" onclick="history.back(); return false;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</nav>
+</body>
+</html>

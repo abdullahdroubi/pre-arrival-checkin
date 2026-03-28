@@ -9,16 +9,7 @@
 
 <body class="chk-page">
     <div class="bg-pattern" aria-hidden="true"></div>
-    <nav class="navbar navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-gem me-2 opacity-75"></i>reterra
-            </a>
-            <a href="#" class="back-link" onclick="history.back(); return false;">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-        </div>
-    </nav>
+    <th:block th:replace="~{fragments/checkin-navbar :: nav(true)}"></th:block>
 
     <div class="container mt-4">
         <div class="progress-container" style="overflow-x:auto;">
@@ -66,19 +57,21 @@
             <input type="hidden" th:name="bookingId" th:value="${bookingId}">
             <input type="hidden" th:name="guestEmail" th:value="${guestEmail}">
 
-            <div class="row g-3">
+            <div class="row g-4">
                 <div class="col-12 col-md-6 col-lg-4" th:each="opt, iter : ${upgradeOptions}">
-                    <input type="radio" th:id="${'offer' + iter.index}" name="upgradeOffer"
-                           th:value="${opt.radioValue}" th:checked="${opt.currentSelection}">
-                    <label th:for="${'offer' + iter.index}" class="upgrade-card">
-                        <img class="offer-image" th:src="${opt.imageUrl}" alt="Room">
-                        <div class="offer-title" th:text="${opt.title}">Room</div>
-                        <div class="offer-subtitle" th:text="${opt.subtitle}">Details</div>
-                        <div class="offer-price mt-2" th:text="${opt.formattedTotal}">0.00 JD</div>
-                        <div class="offer-badge" th:if="${opt.offerBadge != null}">
-                            <i class="fas fa-tags"></i>
-                            <span th:text="${opt.offerBadge}">Offer</span>
-                        </div>
+                    <label class="upgrade-option-card">
+                        <input type="radio" class="upgrade-radio-input" name="upgradeOffer"
+                               th:value="${opt.radioValue}" th:checked="${opt.currentSelection}">
+                        <span class="upgrade-card upgrade-card-inner">
+                            <img class="offer-image" th:src="${opt.imageUrl}" th:alt="${opt.title}">
+                            <div class="offer-title" th:text="${opt.title}">Room</div>
+                            <div class="offer-subtitle" th:text="${opt.subtitle}">Details</div>
+                            <div class="offer-price mt-0" th:text="${opt.formattedTotal}">0.00 JD</div>
+                            <div class="offer-badge" th:if="${opt.offerBadge != null}">
+                                <i class="fas fa-tags"></i>
+                                <span th:text="${opt.offerBadge}">Offer</span>
+                            </div>
+                        </span>
                     </label>
                 </div>
             </div>
