@@ -6,7 +6,7 @@
     <title>Personal information · Pre-arrival check-in</title>
     <th:block th:replace="~{fragments/checkin-assets :: styles}"></th:block>
 </head>
-<body class="chk-page">
+<body class="chk-page chk-saas-layout">
 <th:block th:replace="~{fragments/checkin-navbar :: nav(false)}"></th:block>
 
 <div class="container mt-4 pb-5">
@@ -58,114 +58,35 @@
         <input type="hidden" th:name="guestEmail" th:value="${guestEmail}">
         <input type="hidden" th:name="numberOfGuestsBooked" th:value="${numberOfGuests}">
 
-        <div class="form-container" data-reveal>
-            <h2 class="form-section-title">Personal Information</h2>
-            <p class="form-section-desc">Please provide your details to begin the check-in process. All information is securely encrypted.</p>
+        <div class="form-container chk-saas-card" data-reveal>
+            <header class="chk-saas-card-head">
+                <h2 class="chk-saas-page-title">Guest details</h2>
+                <p class="chk-saas-page-lead">Complete the sections below. Your data is encrypted in transit.</p>
+            </header>
 
-            <div th:if="${formError != null}" class="alert alert-danger chk-form-alert rounded-3 border-0" role="alert" th:text="${formError}">
+            <div th:if="${formError != null}" class="alert alert-danger chk-saas-alert" role="alert" th:text="${formError}">
             </div>
 
-            <div class="chk-form-fields">
-            <div class="row g-4 chk-form-row">
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom" for="ownerFullName">
-                            Full name <span class="required">*</span>
+            <!-- Personal information -->
+            <section class="chk-saas-section" aria-labelledby="chk-sec-personal">
+                <h3 id="chk-sec-personal" class="chk-saas-section-title">Personal information</h3>
+                <p class="chk-saas-section-desc">Legal name and demographics for the reservation owner.</p>
+                <div class="chk-saas-grid">
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label" for="ownerFullName">
+                            Full name <span class="chk-saas-req" aria-hidden="true">*</span>
                         </label>
-                        <div class="input-group-custom chk-input-shell">
+                        <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
                             <i class="fas fa-user input-icon" aria-hidden="true"></i>
-                            <input id="ownerFullName" type="text" class="form-control form-control-custom"
+                            <input id="ownerFullName" type="text" class="form-control form-control-custom chk-saas-input"
                                    th:name="guestFirstName"
                                    th:value="${formDraft != null ? formDraft['guestFirstName'] : guestFullName}"
-                                   placeholder="e.g. Sara Al-Mansour" required autocomplete="name">
+                                   placeholder="As shown on your ID" required autocomplete="name">
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom" for="ownerEmail">
-                            Email <span class="required">*</span>
-                        </label>
-                        <div class="input-group-custom chk-input-shell">
-                            <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
-                            <input id="ownerEmail" type="email" class="form-control form-control-custom chk-input-readonly"
-                                   th:name="guestEmail"
-                                   th:value="${formDraft != null ? formDraft['guestEmail'] : guestEmail}"
-                                   placeholder="you@example.com" required readonly autocomplete="email">
-                        </div>
-                        <p class="chk-field-hint">From your booking — contact the hotel to change.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 chk-form-row">
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom">
-                            Phone <span class="required">*</span>
-                        </label>
-                        <div class="chk-phone-shell">
-                            <div class="phone-input-group">
-                                <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="countryCode" data-value="+966">
-                                    <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox">
-                                        <span class="chk-combo-btn-text">Saudi Arabia +966</span>
-                                        <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
-                                    </button>
-                                    <div class="chk-combo-panel" hidden aria-hidden="true">
-                                        <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
-                                        <ul class="chk-combo-list" role="listbox"></ul>
-                                    </div>
-                                </div>
-                                <div class="phone-input-wrapper chk-input-shell">
-                                    <i class="fas fa-phone input-icon" aria-hidden="true"></i>
-                                    <input type="tel" class="form-control phone-number-input"
-                                           th:name="guestPhone"
-                                           th:value="${formDraft != null ? formDraft['guestPhone'] : ''}"
-                                           placeholder="00 000 0000" required inputmode="tel" autocomplete="tel-national">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom" for="ownerIdPassport">
-                            ID / passport <span class="required">*</span>
-                        </label>
-                        <div class="input-group-custom chk-input-shell">
-                            <i class="fas fa-id-card input-icon" aria-hidden="true"></i>
-                            <input id="ownerIdPassport" type="text" class="form-control form-control-custom"
-                                   name="idPassportNumber"
-                                   th:value="${formDraft != null ? formDraft['idPassportNumber'] : ''}"
-                                   placeholder="Passport or national ID number" required autocomplete="off">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4 chk-form-row align-items-start">
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom" id="nat-label-main">
-                            Nationality <span class="required">*</span>
-                        </label>
-                        <div class="chk-combo chk-combo-nationality chk-input-shell chk-combo-field" data-name="nationality" data-required
-                             th:attr="data-value=${formDraft != null && formDraft['nationality'] != null ? formDraft['nationality'] : ''}">
-                            <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-main">
-                                <span class="chk-combo-btn-text">Select country</span>
-                                <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
-                            </button>
-                            <div class="chk-combo-panel" hidden aria-hidden="true">
-                                <input type="search" class="chk-combo-search form-control" placeholder="Search nationality" autocomplete="off">
-                                <ul class="chk-combo-list" role="listbox"></ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <div class="form-label-custom" id="label-owner-gender">Gender <span class="required">*</span></div>
-                        <div class="chk-seg-group chk-gender-seg" role="radiogroup" aria-labelledby="label-owner-gender">
+                    <div class="chk-saas-field">
+                        <div class="chk-saas-label" id="label-owner-gender">Gender <span class="chk-saas-req" aria-hidden="true">*</span></div>
+                        <div class="chk-seg-group chk-gender-seg chk-saas-seg" role="radiogroup" aria-labelledby="label-owner-gender">
                             <label class="chk-seg-option">
                                 <input type="radio" name="guestGender" value="male" required
                                        th:checked="${formDraft != null && formDraft['guestGender'] == 'male'}">
@@ -178,39 +99,34 @@
                             </label>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="row g-4 chk-form-row">
-                <div class="col-12">
-                    <div class="form-group-custom chk-field-group mb-0">
-                        <label class="form-label-custom" id="label-owner-dob">
-                            Date of birth <span class="required">*</span>
+                    <div class="chk-saas-field chk-saas-field--full">
+                        <label class="chk-saas-label" id="label-owner-dob">
+                            Date of birth <span class="chk-saas-req" aria-hidden="true">*</span>
                         </label>
-                        <p class="chk-dob-hint">Reservation owner must be 18 or older.</p>
-                        <div class="chk-dob-picker"
+                        <p class="chk-saas-hint">Owner must be 18 or older.</p>
+                        <div class="chk-dob-picker chk-saas-dob"
                              id="ownerDobPicker"
                              data-min-age="18"
                              role="group"
                              aria-labelledby="label-owner-dob"
                              th:data-initial-dob="${formDraft != null && formDraft['dateOfBirth'] != null ? formDraft['dateOfBirth'] : ''}">
-                            <div class="chk-dob-card">
-                                <div class="chk-dob-grid">
+                            <div class="chk-dob-card chk-saas-dob-card">
+                                <div class="chk-dob-grid chk-saas-dob-grid">
                                     <div class="chk-dob-field">
                                         <span class="chk-dob-field-label" id="owner-dob-m-l">Month</span>
-                                        <select class="form-select chk-dob-part" data-dob-part="month" aria-labelledby="owner-dob-m-l">
+                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="month" aria-labelledby="owner-dob-m-l">
                                             <option value="">Choose…</option>
                                         </select>
                                     </div>
                                     <div class="chk-dob-field">
                                         <span class="chk-dob-field-label" id="owner-dob-d-l">Day</span>
-                                        <select class="form-select chk-dob-part" data-dob-part="day" aria-labelledby="owner-dob-d-l">
+                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="day" aria-labelledby="owner-dob-d-l">
                                             <option value="">Choose…</option>
                                         </select>
                                     </div>
                                     <div class="chk-dob-field">
                                         <span class="chk-dob-field-label" id="owner-dob-y-l">Year</span>
-                                        <select class="form-select chk-dob-part" data-dob-part="year" aria-labelledby="owner-dob-y-l">
+                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="year" aria-labelledby="owner-dob-y-l">
                                             <option value="">Choose…</option>
                                         </select>
                                     </div>
@@ -220,25 +136,104 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="row g-4 chk-form-row">
-                <div class="col-md-6 col-lg-5">
-                    <div class="form-group-custom chk-field-group mb-0">
-                        <label class="form-label-custom chk-label-optional" for="ownerIqama">
-                            Residency / Iqama <span class="chk-optional-tag">Optional</span>
+            <div class="chk-saas-rule" role="presentation"></div>
+
+            <!-- Contact information -->
+            <section class="chk-saas-section" aria-labelledby="chk-sec-contact">
+                <h3 id="chk-sec-contact" class="chk-saas-section-title">Contact information</h3>
+                <p class="chk-saas-section-desc">How we reach you about your stay.</p>
+                <div class="chk-saas-grid">
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label" for="ownerEmail">
+                            Email <span class="chk-saas-req" aria-hidden="true">*</span>
                         </label>
-                        <div class="input-group-custom chk-input-shell">
+                        <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
+                            <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                            <input id="ownerEmail" type="email" class="form-control form-control-custom chk-saas-input chk-input-readonly"
+                                   th:name="guestEmail"
+                                   th:value="${formDraft != null ? formDraft['guestEmail'] : guestEmail}"
+                                   placeholder="you@example.com" required readonly autocomplete="email">
+                        </div>
+                        <p class="chk-saas-hint">From your booking. Contact the hotel to update.</p>
+                    </div>
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label" for="ownerPhoneSlot">Phone <span class="chk-saas-req" aria-hidden="true">*</span></label>
+                        <div class="chk-phone-shell chk-saas-phone">
+                            <div class="phone-input-group chk-saas-phone-row">
+                                <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="countryCode" data-value="+966">
+                                    <button type="button" class="chk-combo-btn chk-saas-input" aria-expanded="false" aria-haspopup="listbox" id="ownerDialBtn">
+                                        <span class="chk-combo-btn-text">Saudi Arabia +966</span>
+                                        <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                                    </button>
+                                    <div class="chk-combo-panel" hidden aria-hidden="true">
+                                        <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
+                                        <ul class="chk-combo-list" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="phone-input-wrapper chk-input-shell chk-saas-input-wrap">
+                                    <i class="fas fa-phone input-icon" aria-hidden="true"></i>
+                                    <input id="ownerPhoneSlot" type="tel" class="form-control phone-number-input chk-saas-input"
+                                           th:name="guestPhone"
+                                           th:value="${formDraft != null ? formDraft['guestPhone'] : ''}"
+                                           placeholder="00 000 0000" required inputmode="tel" autocomplete="tel-national">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="chk-saas-rule" role="presentation"></div>
+
+            <!-- Identification -->
+            <section class="chk-saas-section" aria-labelledby="chk-sec-id">
+                <h3 id="chk-sec-id" class="chk-saas-section-title">Identification</h3>
+                <p class="chk-saas-section-desc">Travel documents and nationality.</p>
+                <div class="chk-saas-grid">
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label" id="nat-label-main">
+                            Nationality <span class="chk-saas-req" aria-hidden="true">*</span>
+                        </label>
+                        <div class="chk-combo chk-combo-nationality chk-input-shell chk-combo-field chk-saas-input-wrap" data-name="nationality" data-required
+                             th:attr="data-value=${formDraft != null && formDraft['nationality'] != null ? formDraft['nationality'] : ''}">
+                            <button type="button" class="chk-combo-btn chk-saas-input" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-main">
+                                <span class="chk-combo-btn-text">Select country</span>
+                                <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                            </button>
+                            <div class="chk-combo-panel" hidden aria-hidden="true">
+                                <input type="search" class="chk-combo-search form-control" placeholder="Search nationality" autocomplete="off">
+                                <ul class="chk-combo-list" role="listbox"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label" for="ownerIdPassport">
+                            ID / passport number <span class="chk-saas-req" aria-hidden="true">*</span>
+                        </label>
+                        <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
+                            <i class="fas fa-id-card input-icon" aria-hidden="true"></i>
+                            <input id="ownerIdPassport" type="text" class="form-control form-control-custom chk-saas-input"
+                                   name="idPassportNumber"
+                                   th:value="${formDraft != null ? formDraft['idPassportNumber'] : ''}"
+                                   placeholder="Number as printed on document" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="chk-saas-field chk-saas-field--half">
+                        <label class="chk-saas-label chk-saas-label--optional" for="ownerIqama">
+                            Residency / Iqama <span class="chk-saas-optional-pill">Optional</span>
+                        </label>
+                        <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
                             <i class="fas fa-id-badge input-icon" aria-hidden="true"></i>
-                            <input id="ownerIqama" type="text" class="form-control form-control-custom"
+                            <input id="ownerIqama" type="text" class="form-control form-control-custom chk-saas-input"
                                    name="iqamaNumber"
                                    th:value="${formDraft != null ? formDraft['iqamaNumber'] : ''}"
                                    placeholder="If applicable" autocomplete="off">
                         </div>
                     </div>
                 </div>
-            </div>
-            </div><!-- /.chk-form-fields -->
+            </section>
         </div>
 
         <!-- Additional Guests Container -->
@@ -370,7 +365,7 @@
         const container = document.getElementById('additionalGuestsContainer');
 
         const guestSection = document.createElement('div');
-        guestSection.className = 'guest-section';
+        guestSection.className = 'guest-section chk-saas-guest';
         guestSection.id = `guest-${guestCount}`;
 
         guestSection.innerHTML = `
@@ -380,89 +375,19 @@
                     <i class="fas fa-times"></i> Remove
                 </button>
             </div>
-            <div class="chk-form-fields">
-            <div class="row g-4 chk-form-row">
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom">Full name <span class="required">*</span></label>
-                        <div class="input-group-custom chk-input-shell">
+            <section class="chk-saas-section" aria-labelledby="g${guestCount}-personal">
+                <h5 id="g${guestCount}-personal" class="chk-saas-section-title chk-saas-section-title--sub">Personal information</h5>
+                <div class="chk-saas-grid">
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label">Full name <span class="chk-saas-req" aria-hidden="true">*</span></label>
+                        <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
                             <i class="fas fa-user input-icon" aria-hidden="true"></i>
-                            <input type="text" class="form-control form-control-custom"
-                                   name="guest_${guestCount}_fullName"
-                                   placeholder="Guest full name" required autocomplete="name">
+                            <input type="text" class="form-control form-control-custom chk-saas-input" name="guest_${guestCount}_fullName" placeholder="Legal name" required autocomplete="name">
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom chk-label-optional">Email <span class="chk-optional-tag">Optional</span></label>
-                        <div class="input-group-custom chk-input-shell">
-                            <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
-                            <input type="email" class="form-control form-control-custom"
-                                   name="guest_${guestCount}_email"
-                                   placeholder="guest@example.com" autocomplete="email">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row g-4 chk-form-row">
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom chk-label-optional">Phone <span class="chk-optional-tag">Optional</span></label>
-                        <div class="chk-phone-shell">
-                            <div class="phone-input-group">
-                                <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="guest_${guestCount}_countryCode" data-value="+966">
-                                    <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox">
-                                        <span class="chk-combo-btn-text">Saudi Arabia +966</span>
-                                        <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
-                                    </button>
-                                    <div class="chk-combo-panel" hidden aria-hidden="true">
-                                        <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
-                                        <ul class="chk-combo-list" role="listbox"></ul>
-                                    </div>
-                                </div>
-                                <div class="phone-input-wrapper chk-input-shell">
-                                    <i class="fas fa-phone input-icon" aria-hidden="true"></i>
-                                    <input type="tel" class="form-control phone-number-input"
-                                           name="guest_${guestCount}_phone"
-                                           placeholder="00 000 0000" inputmode="tel">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom">ID / passport <span class="required">*</span></label>
-                        <div class="input-group-custom chk-input-shell">
-                            <i class="fas fa-id-card input-icon" aria-hidden="true"></i>
-                            <input type="text" class="form-control form-control-custom"
-                                   name="guest_${guestCount}_idPassport"
-                                   placeholder="Passport or national ID" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row g-4 chk-form-row align-items-start">
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <label class="form-label-custom" id="nat-label-guest-${guestCount}">Nationality <span class="required">*</span></label>
-                        <div class="chk-combo chk-combo-nationality chk-input-shell chk-combo-field" data-name="guest_${guestCount}_nationality" data-required>
-                            <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-guest-${guestCount}">
-                                <span class="chk-combo-btn-text">Select country</span>
-                                <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
-                            </button>
-                            <div class="chk-combo-panel" hidden aria-hidden="true">
-                                <input type="search" class="chk-combo-search form-control" placeholder="Search nationality" autocomplete="off">
-                                <ul class="chk-combo-list" role="listbox"></ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group-custom chk-field-group">
-                        <div class="form-label-custom" id="label-guest-${guestCount}-gender">Gender <span class="required">*</span></div>
-                        <div class="chk-seg-group chk-gender-seg" role="radiogroup" aria-labelledby="label-guest-${guestCount}-gender">
+                    <div class="chk-saas-field">
+                        <div class="chk-saas-label" id="label-guest-${guestCount}-gender">Gender <span class="chk-saas-req" aria-hidden="true">*</span></div>
+                        <div class="chk-seg-group chk-gender-seg chk-saas-seg" role="radiogroup" aria-labelledby="label-guest-${guestCount}-gender">
                             <label class="chk-seg-option">
                                 <input type="radio" name="guest_${guestCount}_gender" value="male" required>
                                 <span class="chk-seg-inner"><i class="fas fa-mars" aria-hidden="true"></i> Male</span>
@@ -473,27 +398,23 @@
                             </label>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="row g-4 chk-form-row">
-                <div class="col-12">
-                    <div class="form-group-custom chk-field-group mb-0">
-                        <div class="form-label-custom" id="label-guest-${guestCount}-dob">Date of birth <span class="required">*</span></div>
-                        <p class="chk-dob-hint">Minors are allowed for additional guests.</p>
-                        <div class="chk-dob-picker" id="guest-${guestCount}-dob" data-min-age="0" data-initial-dob="" role="group" aria-labelledby="label-guest-${guestCount}-dob">
-                            <div class="chk-dob-card">
-                                <div class="chk-dob-grid">
+                    <div class="chk-saas-field chk-saas-field--full">
+                        <div class="chk-saas-label" id="label-guest-${guestCount}-dob">Date of birth <span class="chk-saas-req" aria-hidden="true">*</span></div>
+                        <p class="chk-saas-hint">Minors are allowed for additional guests.</p>
+                        <div class="chk-dob-picker chk-saas-dob" id="guest-${guestCount}-dob" data-min-age="0" data-initial-dob="" role="group" aria-labelledby="label-guest-${guestCount}-dob">
+                            <div class="chk-dob-card chk-saas-dob-card">
+                                <div class="chk-dob-grid chk-saas-dob-grid">
                                     <div class="chk-dob-field">
                                         <span class="chk-dob-field-label">Month</span>
-                                        <select class="form-select chk-dob-part" data-dob-part="month" aria-label="Birth month"><option value="">Choose…</option></select>
+                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="month" aria-label="Birth month"><option value="">Choose…</option></select>
                                     </div>
                                     <div class="chk-dob-field">
                                         <span class="chk-dob-field-label">Day</span>
-                                        <select class="form-select chk-dob-part" data-dob-part="day" aria-label="Birth day"><option value="">Choose…</option></select>
+                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="day" aria-label="Birth day"><option value="">Choose…</option></select>
                                     </div>
                                     <div class="chk-dob-field">
                                         <span class="chk-dob-field-label">Year</span>
-                                        <select class="form-select chk-dob-part" data-dob-part="year" aria-label="Birth year"><option value="">Choose…</option></select>
+                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="year" aria-label="Birth year"><option value="">Choose…</option></select>
                                     </div>
                                 </div>
                             </div>
@@ -501,21 +422,74 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row g-4 chk-form-row">
-                <div class="col-md-6 col-lg-5">
-                    <div class="form-group-custom chk-field-group mb-0">
-                        <label class="form-label-custom chk-label-optional">Residency / Iqama <span class="chk-optional-tag">Optional</span></label>
-                        <div class="input-group-custom chk-input-shell">
-                            <i class="fas fa-id-badge input-icon" aria-hidden="true"></i>
-                            <input type="text" class="form-control form-control-custom"
-                                   name="guest_${guestCount}_iqama"
-                                   placeholder="If applicable">
+            </section>
+            <div class="chk-saas-rule"></div>
+            <section class="chk-saas-section" aria-labelledby="g${guestCount}-contact">
+                <h5 id="g${guestCount}-contact" class="chk-saas-section-title chk-saas-section-title--sub">Contact information</h5>
+                <div class="chk-saas-grid">
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label chk-saas-label--optional">Email <span class="chk-saas-optional-pill">Optional</span></label>
+                        <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
+                            <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                            <input type="email" class="form-control form-control-custom chk-saas-input" name="guest_${guestCount}_email" placeholder="guest@example.com" autocomplete="email">
+                        </div>
+                    </div>
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label chk-saas-label--optional">Phone <span class="chk-saas-optional-pill">Optional</span></label>
+                        <div class="chk-phone-shell chk-saas-phone">
+                            <div class="phone-input-group chk-saas-phone-row">
+                                <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="guest_${guestCount}_countryCode" data-value="+966">
+                                    <button type="button" class="chk-combo-btn chk-saas-input" aria-expanded="false" aria-haspopup="listbox">
+                                        <span class="chk-combo-btn-text">Saudi Arabia +966</span>
+                                        <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                                    </button>
+                                    <div class="chk-combo-panel" hidden aria-hidden="true">
+                                        <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
+                                        <ul class="chk-combo-list" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="phone-input-wrapper chk-input-shell chk-saas-input-wrap">
+                                    <i class="fas fa-phone input-icon" aria-hidden="true"></i>
+                                    <input type="tel" class="form-control phone-number-input chk-saas-input" name="guest_${guestCount}_phone" placeholder="00 000 0000" inputmode="tel">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            </div>
+            </section>
+            <div class="chk-saas-rule"></div>
+            <section class="chk-saas-section chk-saas-section--last" aria-labelledby="g${guestCount}-id">
+                <h5 id="g${guestCount}-id" class="chk-saas-section-title chk-saas-section-title--sub">Identification</h5>
+                <div class="chk-saas-grid">
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label" id="nat-label-guest-${guestCount}">Nationality <span class="chk-saas-req" aria-hidden="true">*</span></label>
+                        <div class="chk-combo chk-combo-nationality chk-input-shell chk-combo-field chk-saas-input-wrap" data-name="guest_${guestCount}_nationality" data-required>
+                            <button type="button" class="chk-combo-btn chk-saas-input" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-guest-${guestCount}">
+                                <span class="chk-combo-btn-text">Select country</span>
+                                <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                            </button>
+                            <div class="chk-combo-panel" hidden aria-hidden="true">
+                                <input type="search" class="chk-combo-search form-control" placeholder="Search nationality" autocomplete="off">
+                                <ul class="chk-combo-list" role="listbox"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chk-saas-field">
+                        <label class="chk-saas-label">ID / passport <span class="chk-saas-req" aria-hidden="true">*</span></label>
+                        <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
+                            <i class="fas fa-id-card input-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control form-control-custom chk-saas-input" name="guest_${guestCount}_idPassport" placeholder="Document number" required>
+                        </div>
+                    </div>
+                    <div class="chk-saas-field chk-saas-field--half">
+                        <label class="chk-saas-label chk-saas-label--optional">Residency / Iqama <span class="chk-saas-optional-pill">Optional</span></label>
+                        <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
+                            <i class="fas fa-id-badge input-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control form-control-custom chk-saas-input" name="guest_${guestCount}_iqama" placeholder="If applicable">
+                        </div>
+                    </div>
+                </div>
+            </section>
         `;
 
         container.appendChild(guestSection);

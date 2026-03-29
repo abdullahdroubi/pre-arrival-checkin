@@ -1,0 +1,385 @@
+/**
+ * SaaS-style personal information form (check-in step 1 only).
+ * Scoped under .chk-saas-layout — 8px spacing scale, blue focus, neutral grays.
+ */
+
+body.chk-saas-layout {
+  background: #f9fafb !important;
+  background-image: none !important;
+}
+
+.chk-saas-layout .container.mt-4 {
+  padding-bottom: 2.5rem;
+}
+
+/* ----- Card ----- */
+.chk-saas-layout .chk-saas-card.form-container {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 4px 24px rgba(15, 23, 42, 0.06) !important;
+  padding: clamp(24px, 4vw, 40px) clamp(20px, 3vw, 36px) 32px !important;
+  margin-bottom: 24px !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.chk-saas-layout .chk-saas-card.form-container:hover {
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.06),
+    0 12px 32px rgba(15, 23, 42, 0.08) !important;
+}
+
+.chk-saas-layout .chk-saas-card-head {
+  margin-bottom: 24px;
+}
+
+.chk-saas-layout .chk-saas-page-title {
+  font-family: var(--chk-font-sans) !important;
+  font-size: 1.375rem !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px !important;
+}
+
+.chk-saas-layout .chk-saas-page-lead {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #6b7280;
+  max-width: 42rem;
+}
+
+/* ----- Sections (24px between) ----- */
+.chk-saas-layout .chk-saas-section {
+  margin-bottom: 24px;
+}
+
+.chk-saas-layout .chk-saas-section--last {
+  margin-bottom: 0;
+}
+
+.chk-saas-layout .chk-saas-section-title {
+  font-family: var(--chk-font-sans) !important;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+
+.chk-saas-layout .chk-saas-section-title--sub {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.chk-saas-layout .chk-saas-section-desc {
+  margin: 0 0 16px;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.chk-saas-layout .chk-saas-rule {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 24px 0;
+  border: 0;
+}
+
+/* ----- Grid: 16px gap, 2 col desktop ----- */
+.chk-saas-layout .chk-saas-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .chk-saas-layout .chk-saas-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.chk-saas-layout .chk-saas-field--full {
+  grid-column: 1 / -1;
+}
+
+/* ----- Labels & hints ----- */
+.chk-saas-layout .chk-saas-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+
+.chk-saas-layout .chk-saas-label--optional {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.chk-saas-layout .chk-saas-req {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.chk-saas-layout .chk-saas-optional-pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+  background: #f3f4f6;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+
+.chk-saas-layout .chk-saas-hint {
+  margin: 0 0 10px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+/* ----- Inputs (48–52px, gray border) ----- */
+.chk-saas-layout {
+  --saas-border: #e5e7eb;
+  --saas-border-hover: #d1d5db;
+  --saas-focus: #2563eb;
+  --saas-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  --saas-input-h: 50px;
+  --saas-radius: 12px;
+}
+
+.chk-saas-layout .chk-saas-input.form-control-custom,
+.chk-saas-layout .chk-saas-input.phone-number-input,
+.chk-saas-layout .chk-saas-input.chk-combo-btn,
+.chk-saas-layout select.chk-saas-input.chk-dob-part {
+  min-height: var(--saas-input-h) !important;
+  border: 1px solid var(--saas-border) !important;
+  border-radius: var(--saas-radius) !important;
+  padding: 12px 16px 12px 44px !important;
+  font-size: 0.9375rem !important;
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+.chk-saas-layout .chk-saas-input.chk-combo-btn {
+  padding-left: 16px !important;
+  font-weight: 500;
+}
+
+.chk-saas-layout select.chk-saas-input.chk-dob-part {
+  padding-left: 14px !important;
+  padding-right: 36px !important;
+}
+
+.chk-saas-layout .chk-saas-input:hover:not(:focus):not(:disabled):not([readonly]) {
+  border-color: var(--saas-border-hover) !important;
+}
+
+.chk-saas-layout .chk-saas-input:focus,
+.chk-saas-layout .chk-saas-input:focus-visible {
+  border-color: var(--saas-focus) !important;
+  box-shadow: var(--saas-focus-ring) !important;
+  outline: none !important;
+}
+
+.chk-saas-layout .chk-input-readonly.chk-saas-input,
+.chk-saas-layout .chk-saas-input[readonly] {
+  background: #f9fafb !important;
+  color: #4b5563 !important;
+  cursor: default;
+}
+
+.chk-saas-layout .chk-saas-input-wrap .input-icon {
+  left: 15px !important;
+  color: #9ca3af !important;
+  transition: color 0.2s ease;
+}
+
+.chk-saas-layout .chk-saas-input-wrap:focus-within .input-icon {
+  color: var(--saas-focus) !important;
+}
+
+/* Remove double shadow from legacy shells inside SaaS */
+.chk-saas-layout .chk-saas-input-wrap.chk-input-shell:not(.chk-combo-field) {
+  box-shadow: none !important;
+  border-radius: var(--saas-radius);
+}
+
+.chk-saas-layout .chk-saas-input-wrap:focus-within {
+  box-shadow: var(--saas-focus-ring) !important;
+}
+
+.chk-saas-layout .chk-saas-input-wrap:focus-within .chk-saas-input {
+  box-shadow: none !important;
+}
+
+/* Phone row */
+.chk-saas-layout .chk-saas-phone {
+  padding: 10px;
+  border-radius: calc(var(--saas-radius) + 2px);
+  background: #f9fafb;
+  border: 1px solid var(--saas-border);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chk-saas-layout .chk-saas-phone:focus-within {
+  border-color: #93c5fd;
+  box-shadow: var(--saas-focus-ring);
+}
+
+.chk-saas-layout .chk-saas-phone-row {
+  gap: 12px;
+  grid-template-columns: minmax(10.5rem, 1fr) minmax(0, 1.35fr);
+}
+
+@media (max-width: 575.98px) {
+  .chk-saas-layout .chk-saas-phone-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Nationality combo shell */
+.chk-saas-layout .chk-combo-field.chk-saas-input-wrap {
+  box-shadow: none !important;
+}
+
+.chk-saas-layout .chk-combo-field:focus-within {
+  box-shadow: var(--saas-focus-ring) !important;
+  border-radius: var(--saas-radius);
+}
+
+.chk-saas-layout .chk-combo-field:focus-within .chk-saas-input.chk-combo-btn {
+  border-color: var(--saas-focus) !important;
+}
+
+/* Segmented gender */
+.chk-saas-layout .chk-saas-seg .chk-seg-inner {
+  min-height: var(--saas-input-h);
+  border: 1px solid var(--saas-border) !important;
+  border-radius: var(--saas-radius) !important;
+  background: #fff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  font-size: 0.9375rem !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+.chk-saas-layout .chk-saas-seg .chk-seg-option:hover .chk-seg-inner {
+  border-color: var(--saas-border-hover) !important;
+  transform: translateY(-1px);
+}
+
+.chk-saas-layout .chk-saas-seg .chk-seg-option input:checked + .chk-seg-inner {
+  border-color: var(--saas-focus) !important;
+  background: #eff6ff !important;
+  color: #1e40af !important;
+  box-shadow: var(--saas-focus-ring) !important;
+}
+
+.chk-saas-layout .chk-saas-seg .chk-seg-option input:focus-visible + .chk-seg-inner {
+  box-shadow: var(--saas-focus-ring) !important;
+  border-color: var(--saas-focus) !important;
+}
+
+/* DOB: equal width row */
+.chk-saas-layout .chk-saas-dob-card {
+  background: #f9fafb !important;
+  border: 1px solid var(--saas-border) !important;
+  border-radius: var(--saas-radius) !important;
+  padding: 16px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.chk-saas-layout .chk-saas-dob-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  align-items: end !important;
+}
+
+@media (max-width: 480px) {
+  .chk-saas-layout .chk-saas-dob-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.chk-saas-layout .chk-saas-dob .chk-dob-field-label {
+  color: #6b7280 !important;
+  font-size: 0.6875rem !important;
+  letter-spacing: 0.08em !important;
+}
+
+.chk-saas-layout select.chk-dob-part.chk-saas-input {
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 10px;
+}
+
+/* Alert */
+.chk-saas-layout .chk-saas-alert {
+  margin-bottom: 24px !important;
+  padding: 12px 16px !important;
+  border-radius: var(--saas-radius) !important;
+  border: 1px solid #fecaca !important;
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+}
+
+/* Form actions */
+.chk-saas-layout .chk-form-actions {
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Guest blocks */
+.chk-saas-layout .guest-section.chk-saas-guest {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 14px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 4px 16px rgba(15, 23, 42, 0.05) !important;
+  padding: 20px 20px 24px !important;
+  margin-top: 24px !important;
+}
+
+.chk-saas-layout .guest-section .guest-header {
+  border-bottom-color: #e5e7eb !important;
+  margin-bottom: 20px !important;
+  padding-bottom: 16px !important;
+}
+
+.chk-saas-layout .guest-section .guest-header h4 {
+  font-family: var(--chk-font-sans) !important;
+  font-size: 1.0625rem !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+
+.chk-saas-layout .guest-section .chk-saas-section {
+  margin-bottom: 0;
+}
+
+.chk-saas-layout .guest-section .chk-saas-rule {
+  margin: 20px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chk-saas-layout .chk-saas-seg .chk-seg-option:hover .chk-seg-inner {
+    transform: none !important;
+  }
+}
