@@ -1414,16 +1414,14 @@ public class CheckInController {
         return Period.between(dob, LocalDate.now()).getYears() >= years;
     }
 
-    /**
-     * Form values: male, female, non_binary, prefer_not_to_say
-     */
+    /** Form values: male, female */
     private static String normalizeGenderCode(String raw) {
         if (raw == null) {
             return null;
         }
         String v = raw.trim();
         return switch (v) {
-            case "male", "female", "non_binary", "prefer_not_to_say" -> v;
+            case "male", "female" -> v;
             default -> null;
         };
     }

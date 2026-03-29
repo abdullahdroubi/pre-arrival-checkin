@@ -1176,15 +1176,10 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
   color: var(--chk-ink-muted) !important;
 }
 
-/* Select / language on home */
-.form-select {
-  border-radius: var(--chk-radius-sm);
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-
+/* Select: never style .form-select globally — it breaks form pages (white text on cream).
+   Scope header-only selects under .hotel-header. */
 .hotel-header .form-select {
+  border-radius: var(--chk-radius-sm);
   color: var(--chk-ink);
   background: rgba(255, 252, 248, 0.95);
   border-color: rgba(26, 34, 32, 0.12);
@@ -1573,15 +1568,94 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
   border-left: 4px solid #b54a4a !important;
 }
 
+/* Form selects: explicit colors so global/header styles never hide text */
+.form-container .form-select {
+  color: var(--chk-ink) !important;
+  background-color: var(--chk-surface) !important;
+  border-color: rgba(26, 34, 32, 0.12) !important;
+}
+
 .chk-dob-hint {
   margin-top: -0.1rem;
+}
+
+/* Gender: two-tap segmented control */
+.chk-seg-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.chk-seg-option {
+  margin: 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.chk-seg-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.chk-seg-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 3.1rem;
+  padding: 0.7rem 0.85rem;
+  border: 2px solid rgba(26, 34, 32, 0.12);
+  border-radius: var(--chk-radius-sm);
+  background: var(--chk-surface);
+  color: var(--chk-ink);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: border-color var(--chk-transition), box-shadow var(--chk-transition), background var(--chk-transition), transform 0.15s ease;
+}
+
+.chk-seg-option:hover .chk-seg-inner {
+  border-color: rgba(47, 93, 78, 0.35);
+}
+
+.chk-seg-option input:focus-visible + .chk-seg-inner {
+  outline: none;
+  box-shadow: var(--chk-ring);
+  border-color: var(--chk-accent);
+}
+
+.chk-seg-option input:checked + .chk-seg-inner {
+  border-color: var(--chk-accent);
+  background: var(--chk-accent-soft);
+  color: var(--chk-ink);
+  box-shadow: 0 0 0 1px rgba(47, 93, 78, 0.12);
+}
+
+.chk-seg-inner i {
+  font-size: 1.05rem;
+  opacity: 0.85;
+}
+
+.chk-dob-card {
+  background: var(--chk-surface);
+  border: 1px solid rgba(26, 34, 32, 0.1);
+  border-radius: var(--chk-radius);
+  padding: 0.85rem 1rem 1rem;
+  box-shadow: 0 2px 12px rgba(26, 34, 32, 0.06);
 }
 
 .chk-dob-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr) minmax(0, 1fr);
-  gap: 0.5rem;
-  align-items: stretch;
+  gap: 0.65rem;
+  align-items: end;
 }
 
 @media (max-width: 575.98px) {
@@ -1590,44 +1664,38 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
   }
 }
 
-.chk-dob-part,
-.chk-gender-select {
+.chk-dob-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.chk-dob-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--chk-ink-muted);
+}
+
+.chk-dob-part {
   min-height: 3rem;
   border-radius: var(--chk-radius-sm) !important;
   border: 1px solid rgba(26, 34, 32, 0.12) !important;
   font-size: 0.9rem;
-  padding-left: 0.85rem;
-  padding-right: 0.65rem;
-  background: var(--chk-surface);
-  color: var(--chk-ink);
+  padding: 0.55rem 0.75rem !important;
+  padding-right: 2rem !important;
+  background: var(--chk-surface-2) !important;
+  color: var(--chk-ink) !important;
   transition: border-color var(--chk-transition), box-shadow var(--chk-transition);
+  cursor: pointer;
 }
 
-.chk-dob-part:focus,
-.chk-gender-select:focus {
+.chk-dob-part:focus {
   border-color: var(--chk-accent) !important;
   box-shadow: var(--chk-ring) !important;
   outline: none;
-}
-
-.chk-gender-wrap {
-  position: relative;
-}
-
-.chk-gender-icon {
-  position: absolute;
-  left: 1.1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  color: var(--chk-ink-subtle);
-  pointer-events: none;
-  font-size: 0.95rem;
-}
-
-.chk-gender-select {
-  padding-left: 3rem !important;
-  appearance: auto;
 }
 
 .chk-combo {

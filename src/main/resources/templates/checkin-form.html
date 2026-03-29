@@ -160,39 +160,54 @@
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
-                        <label class="form-label-custom" for="ownerGender">Gender <span class="required">*</span></label>
-                        <div class="chk-gender-wrap">
-                            <i class="fas fa-venus-mars chk-gender-icon" aria-hidden="true"></i>
-                            <select id="ownerGender" name="guestGender" class="form-select chk-gender-select" required>
-                                <option value="" disabled th:selected="${formDraft == null || formDraft['guestGender'] == null || formDraft['guestGender'] == ''}">Select gender</option>
-                                <option value="male" th:selected="${formDraft != null && formDraft['guestGender'] == 'male'}">Male</option>
-                                <option value="female" th:selected="${formDraft != null && formDraft['guestGender'] == 'female'}">Female</option>
-                                <option value="non_binary" th:selected="${formDraft != null && formDraft['guestGender'] == 'non_binary'}">Non-binary</option>
-                                <option value="prefer_not_to_say" th:selected="${formDraft != null && formDraft['guestGender'] == 'prefer_not_to_say'}">Prefer not to say</option>
-                            </select>
+                        <div class="form-label-custom" id="label-owner-gender">Gender <span class="required">*</span></div>
+                        <div class="chk-seg-group chk-gender-seg" role="radiogroup" aria-labelledby="label-owner-gender">
+                            <label class="chk-seg-option">
+                                <input type="radio" name="guestGender" value="male" required
+                                       th:checked="${formDraft != null && formDraft['guestGender'] == 'male'}">
+                                <span class="chk-seg-inner"><i class="fas fa-mars" aria-hidden="true"></i> Male</span>
+                            </label>
+                            <label class="chk-seg-option">
+                                <input type="radio" name="guestGender" value="female"
+                                       th:checked="${formDraft != null && formDraft['guestGender'] == 'female'}">
+                                <span class="chk-seg-inner"><i class="fas fa-venus" aria-hidden="true"></i> Female</span>
+                            </label>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
-                        <label class="form-label-custom">
+                        <label class="form-label-custom" id="label-owner-dob">
                             Date of Birth <span class="required">*</span>
                         </label>
-                        <p class="chk-dob-hint small text-muted mb-2">You must be at least 18 years old. Reservation owner only.</p>
+                        <p class="chk-dob-hint small text-muted mb-2">You must be at least 18 years old (reservation owner).</p>
                         <div class="chk-dob-picker"
                              id="ownerDobPicker"
                              data-min-age="18"
+                             role="group"
+                             aria-labelledby="label-owner-dob"
                              th:data-initial-dob="${formDraft != null && formDraft['dateOfBirth'] != null ? formDraft['dateOfBirth'] : ''}">
-                            <div class="chk-dob-grid">
-                                <select class="form-select chk-dob-part" data-dob-part="month" aria-label="Birth month">
-                                    <option value="">Month</option>
-                                </select>
-                                <select class="form-select chk-dob-part" data-dob-part="day" aria-label="Birth day">
-                                    <option value="">Day</option>
-                                </select>
-                                <select class="form-select chk-dob-part" data-dob-part="year" aria-label="Birth year">
-                                    <option value="">Year</option>
-                                </select>
+                            <div class="chk-dob-card">
+                                <div class="chk-dob-grid">
+                                    <div class="chk-dob-field">
+                                        <span class="chk-dob-field-label" id="owner-dob-m-l">Month</span>
+                                        <select class="form-select chk-dob-part" data-dob-part="month" aria-labelledby="owner-dob-m-l">
+                                            <option value="">Choose…</option>
+                                        </select>
+                                    </div>
+                                    <div class="chk-dob-field">
+                                        <span class="chk-dob-field-label" id="owner-dob-d-l">Day</span>
+                                        <select class="form-select chk-dob-part" data-dob-part="day" aria-labelledby="owner-dob-d-l">
+                                            <option value="">Choose…</option>
+                                        </select>
+                                    </div>
+                                    <div class="chk-dob-field">
+                                        <span class="chk-dob-field-label" id="owner-dob-y-l">Year</span>
+                                        <select class="form-select chk-dob-part" data-dob-part="year" aria-labelledby="owner-dob-y-l">
+                                            <option value="">Choose…</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                             <input type="hidden" name="dateOfBirth" id="ownerDobHidden" value="" required>
                         </div>
@@ -256,12 +271,12 @@
         const minYear = today.getFullYear() - 120;
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-        yearSel.innerHTML = '<option value="">Year</option>';
+        yearSel.innerHTML = '<option value="">Choose year…</option>';
         for (let y = maxYear; y >= minYear; y--) {
             yearSel.appendChild(new Option(String(y), String(y)));
         }
 
-        monthSel.innerHTML = '<option value="">Month</option>';
+        monthSel.innerHTML = '<option value="">Choose month…</option>';
         for (let m = 1; m <= 12; m++) {
             monthSel.appendChild(new Option(monthNames[m - 1], String(m)));
         }
@@ -270,7 +285,7 @@
             const y = parseInt(yearSel.value, 10);
             const m = parseInt(monthSel.value, 10);
             const prev = daySel.value;
-            daySel.innerHTML = '<option value="">Day</option>';
+            daySel.innerHTML = '<option value="">Choose day…</option>';
             if (!y || !m) {
                 return;
             }
@@ -442,28 +457,39 @@
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
-                        <label class="form-label-custom" for="guest-${guestCount}-gender">Gender <span class="required">*</span></label>
-                        <div class="chk-gender-wrap">
-                            <i class="fas fa-venus-mars chk-gender-icon" aria-hidden="true"></i>
-                            <select id="guest-${guestCount}-gender" name="guest_${guestCount}_gender" class="form-select chk-gender-select" required>
-                                <option value="" disabled selected>Select gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="non_binary">Non-binary</option>
-                                <option value="prefer_not_to_say">Prefer not to say</option>
-                            </select>
+                        <div class="form-label-custom" id="label-guest-${guestCount}-gender">Gender <span class="required">*</span></div>
+                        <div class="chk-seg-group chk-gender-seg" role="radiogroup" aria-labelledby="label-guest-${guestCount}-gender">
+                            <label class="chk-seg-option">
+                                <input type="radio" name="guest_${guestCount}_gender" value="male" required>
+                                <span class="chk-seg-inner"><i class="fas fa-mars" aria-hidden="true"></i> Male</span>
+                            </label>
+                            <label class="chk-seg-option">
+                                <input type="radio" name="guest_${guestCount}_gender" value="female">
+                                <span class="chk-seg-inner"><i class="fas fa-venus" aria-hidden="true"></i> Female</span>
+                            </label>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
-                        <label class="form-label-custom">Date of Birth <span class="required">*</span></label>
-                        <p class="chk-dob-hint small text-muted mb-2">Any age (minor guests allowed).</p>
-                        <div class="chk-dob-picker" id="guest-${guestCount}-dob" data-min-age="0" data-initial-dob="">
-                            <div class="chk-dob-grid">
-                                <select class="form-select chk-dob-part" data-dob-part="month" aria-label="Birth month"><option value="">Month</option></select>
-                                <select class="form-select chk-dob-part" data-dob-part="day" aria-label="Birth day"><option value="">Day</option></select>
-                                <select class="form-select chk-dob-part" data-dob-part="year" aria-label="Birth year"><option value="">Year</option></select>
+                        <div class="form-label-custom" id="label-guest-${guestCount}-dob">Date of Birth <span class="required">*</span></div>
+                        <p class="chk-dob-hint small text-muted mb-2">Minors allowed for additional guests.</p>
+                        <div class="chk-dob-picker" id="guest-${guestCount}-dob" data-min-age="0" data-initial-dob="" role="group" aria-labelledby="label-guest-${guestCount}-dob">
+                            <div class="chk-dob-card">
+                                <div class="chk-dob-grid">
+                                    <div class="chk-dob-field">
+                                        <span class="chk-dob-field-label">Month</span>
+                                        <select class="form-select chk-dob-part" data-dob-part="month" aria-label="Birth month"><option value="">Choose…</option></select>
+                                    </div>
+                                    <div class="chk-dob-field">
+                                        <span class="chk-dob-field-label">Day</span>
+                                        <select class="form-select chk-dob-part" data-dob-part="day" aria-label="Birth day"><option value="">Choose…</option></select>
+                                    </div>
+                                    <div class="chk-dob-field">
+                                        <span class="chk-dob-field-label">Year</span>
+                                        <select class="form-select chk-dob-part" data-dob-part="year" aria-label="Birth year"><option value="">Choose…</option></select>
+                                    </div>
+                                </div>
                             </div>
                             <input type="hidden" name="guest_${guestCount}_dateOfBirth" id="guest-${guestCount}-dob-hidden" value="" required>
                         </div>
