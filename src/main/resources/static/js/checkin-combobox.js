@@ -223,7 +223,7 @@
 
     function setValue(val) {
       hidden.value = val;
-      btn.querySelector('.chk-combo-btn-text').textContent = val || 'Select nationality';
+      btn.querySelector('.chk-combo-btn-text').textContent = val || 'Select country';
       panel.hidden = true;
       panel.setAttribute('aria-hidden', 'true');
       btn.setAttribute('aria-expanded', 'false');
@@ -246,7 +246,7 @@
     }
 
     if (initial) setValue(initial);
-    else btn.querySelector('.chk-combo-btn-text').textContent = 'Select nationality';
+    else btn.querySelector('.chk-combo-btn-text').textContent = 'Select country';
     render('');
 
     ensureDocClose();

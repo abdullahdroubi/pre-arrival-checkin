@@ -65,90 +65,94 @@
             <div th:if="${formError != null}" class="alert alert-danger chk-form-alert rounded-3 border-0" role="alert" th:text="${formError}">
             </div>
 
-            <div class="row g-3">
+            <div class="chk-form-fields">
+            <div class="row g-4 chk-form-row">
                 <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Full Name <span class="required">*</span>
+                    <div class="form-group-custom chk-field-group">
+                        <label class="form-label-custom" for="ownerFullName">
+                            Full name <span class="required">*</span>
                         </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-user input-icon"></i>
-                            <input type="text" class="form-control form-control-custom"
+                        <div class="input-group-custom chk-input-shell">
+                            <i class="fas fa-user input-icon" aria-hidden="true"></i>
+                            <input id="ownerFullName" type="text" class="form-control form-control-custom"
                                    th:name="guestFirstName"
                                    th:value="${formDraft != null ? formDraft['guestFirstName'] : guestFullName}"
-                                   placeholder="Enter your full name" required>
+                                   placeholder="e.g. Sara Al-Mansour" required autocomplete="name">
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Email Address <span class="required">*</span>
+                    <div class="form-group-custom chk-field-group">
+                        <label class="form-label-custom" for="ownerEmail">
+                            Email <span class="required">*</span>
                         </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" class="form-control form-control-custom"
+                        <div class="input-group-custom chk-input-shell">
+                            <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
+                            <input id="ownerEmail" type="email" class="form-control form-control-custom chk-input-readonly"
                                    th:name="guestEmail"
                                    th:value="${formDraft != null ? formDraft['guestEmail'] : guestEmail}"
-                                   placeholder="Enter your Email address" required readonly>
+                                   placeholder="you@example.com" required readonly autocomplete="email">
                         </div>
+                        <p class="chk-field-hint">From your booking — contact the hotel to change.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="row g-3">
+            <div class="row g-4 chk-form-row">
                 <div class="col-md-6">
-                    <div class="form-group-custom">
+                    <div class="form-group-custom chk-field-group">
                         <label class="form-label-custom">
-                            Phone number <span class="required">*</span>
+                            Phone <span class="required">*</span>
                         </label>
-                        <div class="phone-input-group">
-                            <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="countryCode" data-value="+966">
-                                <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox">
-                                    <span class="chk-combo-btn-text">Saudi Arabia +966</span>
-                                    <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
-                                </button>
-                                <div class="chk-combo-panel" hidden aria-hidden="true">
-                                    <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
-                                    <ul class="chk-combo-list" role="listbox"></ul>
+                        <div class="chk-phone-shell">
+                            <div class="phone-input-group">
+                                <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="countryCode" data-value="+966">
+                                    <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox">
+                                        <span class="chk-combo-btn-text">Saudi Arabia +966</span>
+                                        <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                                    </button>
+                                    <div class="chk-combo-panel" hidden aria-hidden="true">
+                                        <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
+                                        <ul class="chk-combo-list" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="phone-input-wrapper chk-input-shell">
+                                    <i class="fas fa-phone input-icon" aria-hidden="true"></i>
+                                    <input type="tel" class="form-control phone-number-input"
+                                           th:name="guestPhone"
+                                           th:value="${formDraft != null ? formDraft['guestPhone'] : ''}"
+                                           placeholder="00 000 0000" required inputmode="tel" autocomplete="tel-national">
                                 </div>
                             </div>
-                            <div class="phone-input-wrapper">
-                                <i class="fas fa-phone input-icon" aria-hidden="true"></i>
-                                <input type="tel" class="form-control phone-number-input"
-                                       th:name="guestPhone"
-                                       th:value="${formDraft != null ? formDraft['guestPhone'] : ''}"
-                                       placeholder="00 000 0000" required>
-                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            ID / Passport Number <span class="required">*</span>
+                    <div class="form-group-custom chk-field-group">
+                        <label class="form-label-custom" for="ownerIdPassport">
+                            ID / passport <span class="required">*</span>
                         </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-id-card input-icon"></i>
-                            <input type="text" class="form-control form-control-custom"
+                        <div class="input-group-custom chk-input-shell">
+                            <i class="fas fa-id-card input-icon" aria-hidden="true"></i>
+                            <input id="ownerIdPassport" type="text" class="form-control form-control-custom"
                                    name="idPassportNumber"
                                    th:value="${formDraft != null ? formDraft['idPassportNumber'] : ''}"
-                                   placeholder="Enter ID / Passport number" required>
+                                   placeholder="Passport or national ID number" required autocomplete="off">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="row g-3 align-items-start">
-                <div class="col-md-6 col-lg-4">
-                    <div class="form-group-custom">
+            <div class="row g-4 chk-form-row align-items-start">
+                <div class="col-md-6">
+                    <div class="form-group-custom chk-field-group">
                         <label class="form-label-custom" id="nat-label-main">
                             Nationality <span class="required">*</span>
                         </label>
-                        <div class="chk-combo chk-combo-nationality" data-name="nationality" data-required
+                        <div class="chk-combo chk-combo-nationality chk-input-shell chk-combo-field" data-name="nationality" data-required
                              th:attr="data-value=${formDraft != null && formDraft['nationality'] != null ? formDraft['nationality'] : ''}">
                             <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-main">
-                                <span class="chk-combo-btn-text">Select nationality</span>
+                                <span class="chk-combo-btn-text">Select country</span>
                                 <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
                             </button>
                             <div class="chk-combo-panel" hidden aria-hidden="true">
@@ -158,8 +162,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="form-group-custom">
+                <div class="col-md-6">
+                    <div class="form-group-custom chk-field-group">
                         <div class="form-label-custom" id="label-owner-gender">Gender <span class="required">*</span></div>
                         <div class="chk-seg-group chk-gender-seg" role="radiogroup" aria-labelledby="label-owner-gender">
                             <label class="chk-seg-option">
@@ -175,12 +179,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="form-group-custom">
+            </div>
+
+            <div class="row g-4 chk-form-row">
+                <div class="col-12">
+                    <div class="form-group-custom chk-field-group mb-0">
                         <label class="form-label-custom" id="label-owner-dob">
-                            Date of Birth <span class="required">*</span>
+                            Date of birth <span class="required">*</span>
                         </label>
-                        <p class="chk-dob-hint small text-muted mb-2">You must be at least 18 years old (reservation owner).</p>
+                        <p class="chk-dob-hint">Reservation owner must be 18 or older.</p>
                         <div class="chk-dob-picker"
                              id="ownerDobPicker"
                              data-min-age="18"
@@ -213,21 +220,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Residency / Iqama Number
+            </div>
+
+            <div class="row g-4 chk-form-row">
+                <div class="col-md-6 col-lg-5">
+                    <div class="form-group-custom chk-field-group mb-0">
+                        <label class="form-label-custom chk-label-optional" for="ownerIqama">
+                            Residency / Iqama <span class="chk-optional-tag">Optional</span>
                         </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-id-badge input-icon"></i>
-                            <input type="text" class="form-control form-control-custom"
+                        <div class="input-group-custom chk-input-shell">
+                            <i class="fas fa-id-badge input-icon" aria-hidden="true"></i>
+                            <input id="ownerIqama" type="text" class="form-control form-control-custom"
                                    name="iqamaNumber"
                                    th:value="${formDraft != null ? formDraft['iqamaNumber'] : ''}"
-                                   placeholder="Enter Iqama number if applicable">
+                                   placeholder="If applicable" autocomplete="off">
                         </div>
                     </div>
                 </div>
             </div>
+            </div><!-- /.chk-form-fields -->
         </div>
 
         <!-- Additional Guests Container -->
@@ -364,88 +375,81 @@
 
         guestSection.innerHTML = `
             <div class="guest-header">
-                <h4>Guest ${guestCount} Information</h4>
+                <h4>Guest ${guestCount}</h4>
                 <button type="button" class="btn btn-remove-guest" onclick="removeGuest(${guestCount})">
                     <i class="fas fa-times"></i> Remove
                 </button>
             </div>
-            <div class="row g-3">
+            <div class="chk-form-fields">
+            <div class="row g-4 chk-form-row">
                 <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Full Name <span class="required">*</span>
-                        </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-user input-icon"></i>
+                    <div class="form-group-custom chk-field-group">
+                        <label class="form-label-custom">Full name <span class="required">*</span></label>
+                        <div class="input-group-custom chk-input-shell">
+                            <i class="fas fa-user input-icon" aria-hidden="true"></i>
                             <input type="text" class="form-control form-control-custom"
                                    name="guest_${guestCount}_fullName"
-                                   placeholder="Enter full name" required>
+                                   placeholder="Guest full name" required autocomplete="name">
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Email Address
-                        </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-envelope input-icon"></i>
+                    <div class="form-group-custom chk-field-group">
+                        <label class="form-label-custom chk-label-optional">Email <span class="chk-optional-tag">Optional</span></label>
+                        <div class="input-group-custom chk-input-shell">
+                            <i class="fas fa-envelope input-icon" aria-hidden="true"></i>
                             <input type="email" class="form-control form-control-custom"
                                    name="guest_${guestCount}_email"
-                                   placeholder="Enter Email address (optional)">
+                                   placeholder="guest@example.com" autocomplete="email">
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row g-3">
+            <div class="row g-4 chk-form-row">
                 <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Phone number
-                        </label>
-                        <div class="phone-input-group">
-                            <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="guest_${guestCount}_countryCode" data-value="+966">
-                                <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox">
-                                    <span class="chk-combo-btn-text">Saudi Arabia +966</span>
-                                    <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
-                                </button>
-                                <div class="chk-combo-panel" hidden aria-hidden="true">
-                                    <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
-                                    <ul class="chk-combo-list" role="listbox"></ul>
+                    <div class="form-group-custom chk-field-group">
+                        <label class="form-label-custom chk-label-optional">Phone <span class="chk-optional-tag">Optional</span></label>
+                        <div class="chk-phone-shell">
+                            <div class="phone-input-group">
+                                <div class="chk-combo chk-combo-dial" data-chk-combo="dial" data-name="guest_${guestCount}_countryCode" data-value="+966">
+                                    <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox">
+                                        <span class="chk-combo-btn-text">Saudi Arabia +966</span>
+                                        <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
+                                    </button>
+                                    <div class="chk-combo-panel" hidden aria-hidden="true">
+                                        <input type="search" class="chk-combo-search form-control" placeholder="Search country or +code" autocomplete="off">
+                                        <ul class="chk-combo-list" role="listbox"></ul>
+                                    </div>
+                                </div>
+                                <div class="phone-input-wrapper chk-input-shell">
+                                    <i class="fas fa-phone input-icon" aria-hidden="true"></i>
+                                    <input type="tel" class="form-control phone-number-input"
+                                           name="guest_${guestCount}_phone"
+                                           placeholder="00 000 0000" inputmode="tel">
                                 </div>
                             </div>
-                            <div class="phone-input-wrapper">
-                                <i class="fas fa-phone input-icon" aria-hidden="true"></i>
-                                <input type="tel" class="form-control phone-number-input"
-                                       name="guest_${guestCount}_phone"
-                                       placeholder="00 000 0000 (optional)">
-                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            ID / Passport Number <span class="required">*</span>
-                        </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-id-card input-icon"></i>
+                    <div class="form-group-custom chk-field-group">
+                        <label class="form-label-custom">ID / passport <span class="required">*</span></label>
+                        <div class="input-group-custom chk-input-shell">
+                            <i class="fas fa-id-card input-icon" aria-hidden="true"></i>
                             <input type="text" class="form-control form-control-custom"
                                    name="guest_${guestCount}_idPassport"
-                                   placeholder="Enter ID / Passport number" required>
+                                   placeholder="Passport or national ID" required>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row g-3 align-items-start">
-                <div class="col-md-6 col-lg-4">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom" id="nat-label-guest-${guestCount}">
-                            Nationality <span class="required">*</span>
-                        </label>
-                        <div class="chk-combo chk-combo-nationality" data-name="guest_${guestCount}_nationality" data-required>
+            <div class="row g-4 chk-form-row align-items-start">
+                <div class="col-md-6">
+                    <div class="form-group-custom chk-field-group">
+                        <label class="form-label-custom" id="nat-label-guest-${guestCount}">Nationality <span class="required">*</span></label>
+                        <div class="chk-combo chk-combo-nationality chk-input-shell chk-combo-field" data-name="guest_${guestCount}_nationality" data-required>
                             <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-guest-${guestCount}">
-                                <span class="chk-combo-btn-text">Select nationality</span>
+                                <span class="chk-combo-btn-text">Select country</span>
                                 <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
                             </button>
                             <div class="chk-combo-panel" hidden aria-hidden="true">
@@ -455,8 +459,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="form-group-custom">
+                <div class="col-md-6">
+                    <div class="form-group-custom chk-field-group">
                         <div class="form-label-custom" id="label-guest-${guestCount}-gender">Gender <span class="required">*</span></div>
                         <div class="chk-seg-group chk-gender-seg" role="radiogroup" aria-labelledby="label-guest-${guestCount}-gender">
                             <label class="chk-seg-option">
@@ -470,10 +474,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="form-group-custom">
-                        <div class="form-label-custom" id="label-guest-${guestCount}-dob">Date of Birth <span class="required">*</span></div>
-                        <p class="chk-dob-hint small text-muted mb-2">Minors allowed for additional guests.</p>
+            </div>
+            <div class="row g-4 chk-form-row">
+                <div class="col-12">
+                    <div class="form-group-custom chk-field-group mb-0">
+                        <div class="form-label-custom" id="label-guest-${guestCount}-dob">Date of birth <span class="required">*</span></div>
+                        <p class="chk-dob-hint">Minors are allowed for additional guests.</p>
                         <div class="chk-dob-picker" id="guest-${guestCount}-dob" data-min-age="0" data-initial-dob="" role="group" aria-labelledby="label-guest-${guestCount}-dob">
                             <div class="chk-dob-card">
                                 <div class="chk-dob-grid">
@@ -495,19 +501,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Residency / Iqama Number
-                        </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-id-badge input-icon"></i>
+            </div>
+            <div class="row g-4 chk-form-row">
+                <div class="col-md-6 col-lg-5">
+                    <div class="form-group-custom chk-field-group mb-0">
+                        <label class="form-label-custom chk-label-optional">Residency / Iqama <span class="chk-optional-tag">Optional</span></label>
+                        <div class="input-group-custom chk-input-shell">
+                            <i class="fas fa-id-badge input-icon" aria-hidden="true"></i>
                             <input type="text" class="form-control form-control-custom"
                                    name="guest_${guestCount}_iqama"
-                                   placeholder="Enter Iqama number if applicable">
+                                   placeholder="If applicable">
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         `;
 
