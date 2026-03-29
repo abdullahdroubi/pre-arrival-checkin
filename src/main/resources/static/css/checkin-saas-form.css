@@ -102,6 +102,27 @@ body.chk-saas-layout {
   .chk-saas-layout .chk-saas-grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  /* Name + gender: second column only as wide as control — removes huge empty gap */
+  .chk-saas-layout .chk-saas-grid--name-gender {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: 12px;
+    align-items: start;
+  }
+}
+
+.chk-saas-layout .chk-saas-field--grow {
+  min-width: 0;
+}
+
+.chk-saas-layout .chk-saas-field--gender {
+  min-width: 0;
+}
+
+@media (min-width: 992px) {
+  .chk-saas-layout .chk-saas-field--gender {
+    justify-self: start;
+  }
 }
 
 .chk-saas-layout .chk-saas-field--full {
@@ -266,32 +287,100 @@ body.chk-saas-layout {
   border-color: var(--saas-focus) !important;
 }
 
-/* Segmented gender */
-.chk-saas-layout .chk-saas-seg .chk-seg-inner {
-  min-height: var(--saas-input-h);
-  border: 1px solid var(--saas-border) !important;
-  border-radius: var(--saas-radius) !important;
-  background: #fff !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  font-size: 0.9375rem !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease !important;
+/* Gender: single pill segmented control — no native radio circles */
+.chk-saas-layout .chk-saas-segmented {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  padding: 4px;
+  gap: 4px;
+  background: #f3f4f6;
+  border: 1px solid var(--saas-border);
+  border-radius: 10px;
+  box-sizing: border-box;
 }
 
-.chk-saas-layout .chk-saas-seg .chk-seg-option:hover .chk-seg-inner {
-  border-color: var(--saas-border-hover) !important;
-  transform: translateY(-1px);
+.chk-saas-layout .chk-saas-seg-item {
+  position: relative;
+  margin: 0;
+  cursor: pointer;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-.chk-saas-layout .chk-saas-seg .chk-seg-option input:checked + .chk-seg-inner {
-  border-color: var(--saas-focus) !important;
-  background: #eff6ff !important;
-  color: #1e40af !important;
-  box-shadow: var(--saas-focus-ring) !important;
+.chk-saas-layout .chk-saas-seg-item input[type="radio"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
 }
 
-.chk-saas-layout .chk-saas-seg .chk-seg-option input:focus-visible + .chk-seg-inner {
-  box-shadow: var(--saas-focus-ring) !important;
-  border-color: var(--saas-focus) !important;
+.chk-saas-layout .chk-saas-seg-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: transparent;
+  white-space: nowrap;
+  pointer-events: none;
+  transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (max-width: 420px) {
+  .chk-saas-layout .chk-saas-seg-face {
+    padding: 0 12px;
+    font-size: 0.8125rem;
+  }
+}
+
+.chk-saas-layout .chk-saas-seg-item:hover .chk-saas-seg-face {
+  color: #374151;
+}
+
+.chk-saas-layout .chk-saas-seg-item input:checked + .chk-saas-seg-face {
+  background: #ffffff;
+  color: #1d4ed8;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.chk-saas-layout .chk-saas-seg-item input:focus-visible + .chk-saas-seg-face {
+  box-shadow: var(--saas-focus-ring);
+  outline: none;
+}
+
+.chk-saas-layout .chk-saas-segmented:focus-within {
+  border-color: #cbd5e1;
+}
+
+@media (max-width: 991.98px) {
+  .chk-saas-layout .chk-saas-grid--name-gender .chk-saas-segmented {
+    display: flex;
+    width: 100%;
+  }
+
+  .chk-saas-layout .chk-saas-grid--name-gender .chk-saas-seg-item {
+    flex: 1 1 0;
+  }
+
+  .chk-saas-layout .chk-saas-grid--name-gender .chk-saas-seg-face {
+    white-space: normal;
+    text-align: center;
+  }
 }
 
 /* DOB: equal width row */
@@ -379,7 +468,7 @@ body.chk-saas-layout {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chk-saas-layout .chk-saas-seg .chk-seg-option:hover .chk-seg-inner {
-    transform: none !important;
+  .chk-saas-layout .chk-saas-seg-face {
+    transition: none !important;
   }
 }

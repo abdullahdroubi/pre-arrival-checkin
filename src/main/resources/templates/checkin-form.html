@@ -71,8 +71,8 @@
             <section class="chk-saas-section" aria-labelledby="chk-sec-personal">
                 <h3 id="chk-sec-personal" class="chk-saas-section-title">Personal information</h3>
                 <p class="chk-saas-section-desc">Legal name and demographics for the reservation owner.</p>
-                <div class="chk-saas-grid">
-                    <div class="chk-saas-field">
+                <div class="chk-saas-grid chk-saas-grid--name-gender">
+                    <div class="chk-saas-field chk-saas-field--grow">
                         <label class="chk-saas-label" for="ownerFullName">
                             Full name <span class="chk-saas-req" aria-hidden="true">*</span>
                         </label>
@@ -84,18 +84,18 @@
                                    placeholder="As shown on your ID" required autocomplete="name">
                         </div>
                     </div>
-                    <div class="chk-saas-field">
+                    <div class="chk-saas-field chk-saas-field--gender">
                         <div class="chk-saas-label" id="label-owner-gender">Gender <span class="chk-saas-req" aria-hidden="true">*</span></div>
-                        <div class="chk-seg-group chk-gender-seg chk-saas-seg" role="radiogroup" aria-labelledby="label-owner-gender">
-                            <label class="chk-seg-option">
+                        <div class="chk-saas-segmented" role="radiogroup" aria-labelledby="label-owner-gender">
+                            <label class="chk-saas-seg-item">
                                 <input type="radio" name="guestGender" value="male" required
                                        th:checked="${formDraft != null && formDraft['guestGender'] == 'male'}">
-                                <span class="chk-seg-inner"><i class="fas fa-mars" aria-hidden="true"></i> Male</span>
+                                <span class="chk-saas-seg-face"><i class="fas fa-mars" aria-hidden="true"></i> Male</span>
                             </label>
-                            <label class="chk-seg-option">
+                            <label class="chk-saas-seg-item">
                                 <input type="radio" name="guestGender" value="female"
                                        th:checked="${formDraft != null && formDraft['guestGender'] == 'female'}">
-                                <span class="chk-seg-inner"><i class="fas fa-venus" aria-hidden="true"></i> Female</span>
+                                <span class="chk-saas-seg-face"><i class="fas fa-venus" aria-hidden="true"></i> Female</span>
                             </label>
                         </div>
                     </div>
@@ -377,24 +377,24 @@
             </div>
             <section class="chk-saas-section" aria-labelledby="g${guestCount}-personal">
                 <h5 id="g${guestCount}-personal" class="chk-saas-section-title chk-saas-section-title--sub">Personal information</h5>
-                <div class="chk-saas-grid">
-                    <div class="chk-saas-field">
+                <div class="chk-saas-grid chk-saas-grid--name-gender">
+                    <div class="chk-saas-field chk-saas-field--grow">
                         <label class="chk-saas-label">Full name <span class="chk-saas-req" aria-hidden="true">*</span></label>
                         <div class="input-group-custom chk-input-shell chk-saas-input-wrap">
                             <i class="fas fa-user input-icon" aria-hidden="true"></i>
                             <input type="text" class="form-control form-control-custom chk-saas-input" name="guest_${guestCount}_fullName" placeholder="Legal name" required autocomplete="name">
                         </div>
                     </div>
-                    <div class="chk-saas-field">
+                    <div class="chk-saas-field chk-saas-field--gender">
                         <div class="chk-saas-label" id="label-guest-${guestCount}-gender">Gender <span class="chk-saas-req" aria-hidden="true">*</span></div>
-                        <div class="chk-seg-group chk-gender-seg chk-saas-seg" role="radiogroup" aria-labelledby="label-guest-${guestCount}-gender">
-                            <label class="chk-seg-option">
+                        <div class="chk-saas-segmented" role="radiogroup" aria-labelledby="label-guest-${guestCount}-gender">
+                            <label class="chk-saas-seg-item">
                                 <input type="radio" name="guest_${guestCount}_gender" value="male" required>
-                                <span class="chk-seg-inner"><i class="fas fa-mars" aria-hidden="true"></i> Male</span>
+                                <span class="chk-saas-seg-face"><i class="fas fa-mars" aria-hidden="true"></i> Male</span>
                             </label>
-                            <label class="chk-seg-option">
+                            <label class="chk-saas-seg-item">
                                 <input type="radio" name="guest_${guestCount}_gender" value="female">
-                                <span class="chk-seg-inner"><i class="fas fa-venus" aria-hidden="true"></i> Female</span>
+                                <span class="chk-saas-seg-face"><i class="fas fa-venus" aria-hidden="true"></i> Female</span>
                             </label>
                         </div>
                     </div>
