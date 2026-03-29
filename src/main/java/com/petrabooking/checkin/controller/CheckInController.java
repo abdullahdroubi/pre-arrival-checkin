@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Locale;
+import java.time.LocalDate;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +28,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Controller
 @RequestMapping("/checkin")
 public class CheckInController {
+
+    private static final int MIN_OWNER_AGE_YEARS = 18;
 
     @Autowired
     private SupabaseService supabaseService;
@@ -109,25 +113,39 @@ public class CheckInController {
             return "error";
         }
 
+        populateCheckInFormModel(model, bookingData, hotel, email, session);
+        return "checkin-form";
+    }
+
+    /**
+     * Shared model attributes for the personal-information step (new visit or validation re-render).
+     */
+    private void populateCheckInFormModel(
+            Model model,
+            Booking bookingData,
+            Hotel hotel,
+            String guestEmail,
+            HttpSession session) {
+
         model.addAttribute("booking", bookingData);
         model.addAttribute("hotel", hotel);
-        model.addAttribute("guestEmail", email);
-        
-        // Build guest name safely
+        model.addAttribute("guestEmail", guestEmail);
+
         String guestName = "";
         if (bookingData.getGuestFirstName() != null) {
             guestName += bookingData.getGuestFirstName();
         }
         if (bookingData.getGuestLastName() != null) {
-            if (!guestName.isEmpty()) guestName += " ";
+            if (!guestName.isEmpty()) {
+                guestName += " ";
+            }
             guestName += bookingData.getGuestLastName();
         }
         if (guestName.isEmpty()) {
             guestName = "Guest";
         }
         model.addAttribute("guestFullName", guestName);
-        
-        // Ensure numberOfGuests is not null
+
         Integer numberOfGuests = bookingData.getNumberOfGuests();
         if (numberOfGuests == null || numberOfGuests < 1) {
             numberOfGuests = 1;
@@ -135,7 +153,24 @@ public class CheckInController {
         model.addAttribute("numberOfGuests", numberOfGuests);
 
         ensureBookingBaselineTotal(session, bookingData);
+    }
 
+    private String returnCheckInFormWithError(
+            Model model,
+            HttpSession session,
+            Booking bookingData,
+            String guestEmail,
+            Map<String, String> formData,
+            String message) {
+
+        Hotel hotel = supabaseService.getHotelById(bookingData.getHotelId());
+        if (hotel == null) {
+            model.addAttribute("error", "Hotel information not found.");
+            return "error";
+        }
+        populateCheckInFormModel(model, bookingData, hotel, guestEmail, session);
+        model.addAttribute("formError", message);
+        model.addAttribute("formDraft", formData);
         return "checkin-form";
     }
 
@@ -197,6 +232,30 @@ public class CheckInController {
             }
         }
 
+        String draftEmail = formData.get("guestEmail");
+        LocalDate ownerDob = parseIsoLocalDate(formData.get("dateOfBirth"));
+        if (ownerDob == null) {
+            return returnCheckInFormWithError(model, session, bookingData, draftEmail, formData,
+                    "Please enter a valid date of birth for the reservation owner.");
+        }
+        if (!isAtLeastYearsOld(ownerDob, MIN_OWNER_AGE_YEARS)) {
+            return returnCheckInFormWithError(model, session, bookingData, draftEmail, formData,
+                    "The reservation owner must be at least 18 years old.");
+        }
+
+        String ownerGender = normalizeGenderCode(formData.get("guestGender"));
+        if (ownerGender == null) {
+            return returnCheckInFormWithError(model, session, bookingData, draftEmail, formData,
+                    "Please select gender for the reservation owner.");
+        }
+
+        for (int i = 2; i <= submittedGuests; i++) {
+            if (normalizeGenderCode(formData.get("guest_" + i + "_gender")) == null) {
+                return returnCheckInFormWithError(model, session, bookingData, draftEmail, formData,
+                        "Please select gender for guest " + i + ".");
+            }
+        }
+
         // Prepare check-in data
         Map<String, Object> checkInData = new HashMap<>();
 
@@ -209,6 +268,7 @@ public class CheckInController {
         checkInData.put("id_passport_number", formData.get("idPassportNumber"));
         checkInData.put("nationality", formData.get("nationality"));
         checkInData.put("date_of_birth", formData.get("dateOfBirth"));
+        checkInData.put("guest_gender", ownerGender);
         checkInData.put("iqama_number", formData.get("iqamaNumber"));
         checkInData.put("submitted_guests_count", submittedGuests);
         checkInData.put("booked_guests_count", bookingData.getNumberOfGuests());
@@ -227,7 +287,8 @@ public class CheckInController {
             guest.put("id_passport", formData.get("guest_" + i + "_idPassport"));
             guest.put("nationality", formData.get("guest_" + i + "_nationality"));
             guest.put("date_of_birth", formData.get("guest_" + i + "_dateOfBirth"));
-            
+            guest.put("gender", normalizeGenderCode(formData.get("guest_" + i + "_gender")));
+
             // Optional email - only add if provided
             String email = formData.get("guest_" + i + "_email");
             if (email != null && !email.trim().isEmpty()) {
@@ -271,6 +332,7 @@ public class CheckInController {
         personalInfoData.put("idPassportNumber", formData.get("idPassportNumber"));
         personalInfoData.put("nationality", formData.get("nationality"));
         personalInfoData.put("dateOfBirth", formData.get("dateOfBirth"));
+        personalInfoData.put("guestGender", ownerGender);
         personalInfoData.put("iqamaNumber", formData.get("iqamaNumber"));
         personalInfoData.put("additionalGuests", additionalGuests);
         session.setAttribute("personalInfo_" + bookingId, personalInfoData);
@@ -290,8 +352,8 @@ public class CheckInController {
                    "&bookingId=" + bookingId + "&guestEmail=" + guestEmail;
         } catch (Exception e) {
             System.out.println("[CHECKIN] Error submitting check-in: " + e.getMessage());
-            model.addAttribute("error", "Failed to submit check-in. Please try again.");
-            return "error";
+            return returnCheckInFormWithError(model, session, bookingData, draftEmail, formData,
+                    "Failed to submit check-in. Please try again. If this continues, contact the hotel.");
         }
     }
 
@@ -649,6 +711,11 @@ public class CheckInController {
         String ownerPhone = String.valueOf(personalInfo.get("guestPhone"));
         String ownerEmail = String.valueOf(personalInfo.get("guestEmail"));
         String ownerIdPassport = maskId(String.valueOf(personalInfo.get("idPassportNumber")));
+        Object ownerGenderObj = personalInfo.get("guestGender");
+        String ownerGenderCode = ownerGenderObj != null ? ownerGenderObj.toString() : null;
+        if (ownerGenderCode != null && ownerGenderCode.equals("null")) {
+            ownerGenderCode = null;
+        }
 
         // Load additional guests
         @SuppressWarnings("unchecked")
@@ -660,6 +727,7 @@ public class CheckInController {
                 guestInfo.put("fullName", guest.get("full_name"));
                 guestInfo.put("nationality", guest.get("nationality"));
                 guestInfo.put("dateOfBirth", formatDateOfBirth(guest.get("date_of_birth")));
+                guestInfo.put("gender", formatGenderForDisplay(guest.get("gender")));
                 guestInfo.put("idPassport", maskId(guest.get("id_passport")));
                 otherGuestsList.add(guestInfo);
             }
@@ -674,6 +742,7 @@ public class CheckInController {
         model.addAttribute("checkOutDisplay", checkOutDisplay);
         model.addAttribute("ownerFullName", ownerFullName);
         model.addAttribute("ownerNationality", ownerNationality);
+        model.addAttribute("ownerGender", formatGenderForDisplay(ownerGenderCode));
         model.addAttribute("ownerDateOfBirth", ownerDateOfBirth);
         model.addAttribute("ownerPhone", ownerPhone);
         model.addAttribute("ownerEmail", ownerEmail);
@@ -1328,6 +1397,48 @@ public class CheckInController {
         }
 
         return response;
+    }
+
+    private LocalDate parseIsoLocalDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value.trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static boolean isAtLeastYearsOld(LocalDate dob, int years) {
+        return Period.between(dob, LocalDate.now()).getYears() >= years;
+    }
+
+    /**
+     * Form values: male, female, non_binary, prefer_not_to_say
+     */
+    private static String normalizeGenderCode(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String v = raw.trim();
+        return switch (v) {
+            case "male", "female", "non_binary", "prefer_not_to_say" -> v;
+            default -> null;
+        };
+    }
+
+    private static String formatGenderForDisplay(String code) {
+        if (code == null || code.isEmpty() || "null".equals(code)) {
+            return "N/A";
+        }
+        return switch (code) {
+            case "male" -> "Male";
+            case "female" -> "Female";
+            case "non_binary" -> "Non-binary";
+            case "prefer_not_to_say" -> "Prefer not to say";
+            default -> code;
+        };
     }
 
     /**

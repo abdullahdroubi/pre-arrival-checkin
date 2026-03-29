@@ -133,6 +133,16 @@
 
                 <div class="info-row">
                     <div class="info-icon">
+                        <i class="fas fa-venus-mars"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">Gender</div>
+                        <div class="info-value" th:text="${ownerGender}">Male</div>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-icon">
                         <i class="fas fa-calendar"></i>
                     </div>
                     <div class="info-content">
@@ -186,6 +196,10 @@
                         <div class="guest-detail-item">
                             <div class="guest-detail-label">Nationality</div>
                             <div class="guest-detail-value" th:text="${guest.nationality}">Syrian</div>
+                        </div>
+                        <div class="guest-detail-item">
+                            <div class="guest-detail-label">Gender</div>
+                            <div class="guest-detail-value" th:text="${guest.gender}">Male</div>
                         </div>
                         <div class="guest-detail-item">
                             <div class="guest-detail-label">Date of Birth</div>

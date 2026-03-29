@@ -62,6 +62,9 @@
             <h2 class="form-section-title">Personal Information</h2>
             <p class="form-section-desc">Please provide your details to begin the check-in process. All information is securely encrypted.</p>
 
+            <div th:if="${formError != null}" class="alert alert-danger chk-form-alert rounded-3 border-0" role="alert" th:text="${formError}">
+            </div>
+
             <div class="row g-3">
                 <div class="col-md-6">
                     <div class="form-group-custom">
@@ -72,7 +75,7 @@
                             <i class="fas fa-user input-icon"></i>
                             <input type="text" class="form-control form-control-custom"
                                    th:name="guestFirstName"
-                                   th:value="${guestFullName}"
+                                   th:value="${formDraft != null ? formDraft['guestFirstName'] : guestFullName}"
                                    placeholder="Enter your full name" required>
                         </div>
                     </div>
@@ -86,7 +89,7 @@
                             <i class="fas fa-envelope input-icon"></i>
                             <input type="email" class="form-control form-control-custom"
                                    th:name="guestEmail"
-                                   th:value="${guestEmail}"
+                                   th:value="${formDraft != null ? formDraft['guestEmail'] : guestEmail}"
                                    placeholder="Enter your Email address" required readonly>
                         </div>
                     </div>
@@ -114,6 +117,7 @@
                                 <i class="fas fa-phone input-icon" aria-hidden="true"></i>
                                 <input type="tel" class="form-control phone-number-input"
                                        th:name="guestPhone"
+                                       th:value="${formDraft != null ? formDraft['guestPhone'] : ''}"
                                        placeholder="00 000 0000" required>
                             </div>
                         </div>
@@ -128,6 +132,7 @@
                             <i class="fas fa-id-card input-icon"></i>
                             <input type="text" class="form-control form-control-custom"
                                    name="idPassportNumber"
+                                   th:value="${formDraft != null ? formDraft['idPassportNumber'] : ''}"
                                    placeholder="Enter ID / Passport number" required>
                         </div>
                     </div>
@@ -140,7 +145,8 @@
                         <label class="form-label-custom" id="nat-label-main">
                             Nationality <span class="required">*</span>
                         </label>
-                        <div class="chk-combo chk-combo-nationality" data-name="nationality" data-required>
+                        <div class="chk-combo chk-combo-nationality" data-name="nationality" data-required
+                             th:attr="data-value=${formDraft != null && formDraft['nationality'] != null ? formDraft['nationality'] : ''}">
                             <button type="button" class="chk-combo-btn" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="nat-label-main">
                                 <span class="chk-combo-btn-text">Select nationality</span>
                                 <i class="fas fa-chevron-down chk-combo-caret" aria-hidden="true"></i>
@@ -154,14 +160,41 @@
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
+                        <label class="form-label-custom" for="ownerGender">Gender <span class="required">*</span></label>
+                        <div class="chk-gender-wrap">
+                            <i class="fas fa-venus-mars chk-gender-icon" aria-hidden="true"></i>
+                            <select id="ownerGender" name="guestGender" class="form-select chk-gender-select" required>
+                                <option value="" disabled th:selected="${formDraft == null || formDraft['guestGender'] == null || formDraft['guestGender'] == ''}">Select gender</option>
+                                <option value="male" th:selected="${formDraft != null && formDraft['guestGender'] == 'male'}">Male</option>
+                                <option value="female" th:selected="${formDraft != null && formDraft['guestGender'] == 'female'}">Female</option>
+                                <option value="non_binary" th:selected="${formDraft != null && formDraft['guestGender'] == 'non_binary'}">Non-binary</option>
+                                <option value="prefer_not_to_say" th:selected="${formDraft != null && formDraft['guestGender'] == 'prefer_not_to_say'}">Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="form-group-custom">
                         <label class="form-label-custom">
                             Date of Birth <span class="required">*</span>
                         </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-calendar input-icon"></i>
-                            <input type="date" class="form-control form-control-custom"
-                                   name="dateOfBirth"
-                                   placeholder="mm/dd/yyyy" required>
+                        <p class="chk-dob-hint small text-muted mb-2">You must be at least 18 years old. Reservation owner only.</p>
+                        <div class="chk-dob-picker"
+                             id="ownerDobPicker"
+                             data-min-age="18"
+                             th:data-initial-dob="${formDraft != null && formDraft['dateOfBirth'] != null ? formDraft['dateOfBirth'] : ''}">
+                            <div class="chk-dob-grid">
+                                <select class="form-select chk-dob-part" data-dob-part="month" aria-label="Birth month">
+                                    <option value="">Month</option>
+                                </select>
+                                <select class="form-select chk-dob-part" data-dob-part="day" aria-label="Birth day">
+                                    <option value="">Day</option>
+                                </select>
+                                <select class="form-select chk-dob-part" data-dob-part="year" aria-label="Birth year">
+                                    <option value="">Year</option>
+                                </select>
+                            </div>
+                            <input type="hidden" name="dateOfBirth" id="ownerDobHidden" value="" required>
                         </div>
                     </div>
                 </div>
@@ -174,6 +207,7 @@
                             <i class="fas fa-id-badge input-icon"></i>
                             <input type="text" class="form-control form-control-custom"
                                    name="iqamaNumber"
+                                   th:value="${formDraft != null ? formDraft['iqamaNumber'] : ''}"
                                    placeholder="Enter Iqama number if applicable">
                         </div>
                     </div>
@@ -198,6 +232,98 @@
 <th:block th:replace="~{fragments/checkin-assets :: scripts}"></th:block>
 <script th:src="@{/js/checkin-combobox.js}" defer></script>
 <script>
+    function chkDaysInMonth(year, month1to12) {
+        return new Date(year, month1to12, 0).getDate();
+    }
+
+    window.initChkDobPicker = function (container) {
+        if (!container || container.dataset.dobBound === '1') {
+            return;
+        }
+        container.dataset.dobBound = '1';
+        const minAge = parseInt(container.getAttribute('data-min-age') || '18', 10);
+        const monthSel = container.querySelector('[data-dob-part="month"]');
+        const daySel = container.querySelector('[data-dob-part="day"]');
+        const yearSel = container.querySelector('[data-dob-part="year"]');
+        const hidden = container.querySelector('input[type="hidden"]');
+        if (!monthSel || !daySel || !yearSel || !hidden) {
+            return;
+        }
+
+        const today = new Date();
+        const upper = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+        const maxYear = upper.getFullYear();
+        const minYear = today.getFullYear() - 120;
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        yearSel.innerHTML = '<option value="">Year</option>';
+        for (let y = maxYear; y >= minYear; y--) {
+            yearSel.appendChild(new Option(String(y), String(y)));
+        }
+
+        monthSel.innerHTML = '<option value="">Month</option>';
+        for (let m = 1; m <= 12; m++) {
+            monthSel.appendChild(new Option(monthNames[m - 1], String(m)));
+        }
+
+        function refreshDays() {
+            const y = parseInt(yearSel.value, 10);
+            const m = parseInt(monthSel.value, 10);
+            const prev = daySel.value;
+            daySel.innerHTML = '<option value="">Day</option>';
+            if (!y || !m) {
+                return;
+            }
+            const dim = chkDaysInMonth(y, m);
+            for (let d = 1; d <= dim; d++) {
+                daySel.appendChild(new Option(String(d), String(d)));
+            }
+            if (prev && parseInt(prev, 10) <= dim) {
+                daySel.value = prev;
+            }
+        }
+
+        function syncHidden() {
+            const y = yearSel.value;
+            const m = monthSel.value;
+            const d = daySel.value;
+            if (y && m && d) {
+                hidden.value = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            } else {
+                hidden.value = '';
+            }
+        }
+
+        yearSel.addEventListener('change', function () {
+            refreshDays();
+            syncHidden();
+        });
+        monthSel.addEventListener('change', function () {
+            refreshDays();
+            syncHidden();
+        });
+        daySel.addEventListener('change', syncHidden);
+
+        const initial = (container.getAttribute('data-initial-dob') || '').trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(initial)) {
+            const parts = initial.split('-').map(function (x) {
+                return parseInt(x, 10);
+            });
+            yearSel.value = String(parts[0]);
+            monthSel.value = String(parts[1]);
+            refreshDays();
+            daySel.value = String(parts[2]);
+            syncHidden();
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var ownerDob = document.getElementById('ownerDobPicker');
+        if (ownerDob) {
+            window.initChkDobPicker(ownerDob);
+        }
+    });
+
     let guestCount = 1;
     const bookedGuests = parseInt(document.querySelector('input[name="numberOfGuestsBooked"]').value || '1');
 
@@ -316,14 +442,30 @@
                 </div>
                 <div class="col-md-6 col-lg-4">
                     <div class="form-group-custom">
-                        <label class="form-label-custom">
-                            Date of Birth <span class="required">*</span>
-                        </label>
-                        <div class="input-group-custom">
-                            <i class="fas fa-calendar input-icon"></i>
-                            <input type="date" class="form-control form-control-custom"
-                                   name="guest_${guestCount}_dateOfBirth"
-                                   placeholder="mm/dd/yyyy" required>
+                        <label class="form-label-custom" for="guest-${guestCount}-gender">Gender <span class="required">*</span></label>
+                        <div class="chk-gender-wrap">
+                            <i class="fas fa-venus-mars chk-gender-icon" aria-hidden="true"></i>
+                            <select id="guest-${guestCount}-gender" name="guest_${guestCount}_gender" class="form-select chk-gender-select" required>
+                                <option value="" disabled selected>Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="non_binary">Non-binary</option>
+                                <option value="prefer_not_to_say">Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="form-group-custom">
+                        <label class="form-label-custom">Date of Birth <span class="required">*</span></label>
+                        <p class="chk-dob-hint small text-muted mb-2">Any age (minor guests allowed).</p>
+                        <div class="chk-dob-picker" id="guest-${guestCount}-dob" data-min-age="0" data-initial-dob="">
+                            <div class="chk-dob-grid">
+                                <select class="form-select chk-dob-part" data-dob-part="month" aria-label="Birth month"><option value="">Month</option></select>
+                                <select class="form-select chk-dob-part" data-dob-part="day" aria-label="Birth day"><option value="">Day</option></select>
+                                <select class="form-select chk-dob-part" data-dob-part="year" aria-label="Birth year"><option value="">Year</option></select>
+                            </div>
+                            <input type="hidden" name="guest_${guestCount}_dateOfBirth" id="guest-${guestCount}-dob-hidden" value="" required>
                         </div>
                     </div>
                 </div>
@@ -347,6 +489,10 @@
         if (typeof window.initCheckinCombos === 'function') {
             window.initCheckinCombos(guestSection);
         }
+        const gDob = guestSection.querySelector('.chk-dob-picker');
+        if (gDob && typeof window.initChkDobPicker === 'function') {
+            window.initChkDobPicker(gDob);
+        }
         updateGuestCountWarning();
     }
 
@@ -359,10 +505,37 @@
         }
     }
 
-    // Form validation
-    document.getElementById('checkinForm').addEventListener('submit', function(e) {
+    function chkOwnerAge18OrMore() {
+        const ownerHidden = document.getElementById('ownerDobHidden');
+        if (!ownerHidden || !ownerHidden.value) {
+            return false;
+        }
+        const p = ownerHidden.value.split('-').map(function (x) {
+            return parseInt(x, 10);
+        });
+        if (p.length !== 3 || p.some(function (n) {
+            return isNaN(n);
+        })) {
+            return false;
+        }
+        const bd = new Date(p[0], p[1] - 1, p[2]);
+        const today = new Date();
+        let age = today.getFullYear() - bd.getFullYear();
+        const md = today.getMonth() - bd.getMonth();
+        if (md < 0 || (md === 0 && today.getDate() < bd.getDate())) {
+            age--;
+        }
+        return age >= 18;
+    }
+
+    document.getElementById('checkinForm').addEventListener('submit', function (e) {
+        if (!chkOwnerAge18OrMore()) {
+            e.preventDefault();
+            alert('The reservation owner must be at least 18 years old. Please adjust the date of birth.');
+            return false;
+        }
         if (guestCount > bookedGuests) {
-            if (!confirm(`You are adding ${guestCount} guest(s) but booked for ${bookedGuests}. Additional charges will apply. Continue?`)) {
+            if (!confirm('You are adding ' + guestCount + ' guest(s) but booked for ' + bookedGuests + '. Additional charges will apply. Continue?')) {
                 e.preventDefault();
                 return false;
             }

@@ -331,7 +331,7 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
 }
 
 .form-control-custom {
-  padding-left: 2.75rem !important;
+  padding-left: 3.05rem !important;
   min-height: 3rem;
 }
 
@@ -613,6 +613,8 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
 
 .accept-sign-page .accordion-button {
   font-size: 0.95rem;
+  padding-left: 1.2rem;
+  padding-right: 1rem;
 }
 
 .accept-sign-page .accordion-button:not(.collapsed) {
@@ -887,6 +889,14 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
 }
 
 .policy-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.65rem;
+  flex-shrink: 0;
+  margin-right: 0.25rem;
   background: var(--chk-brass-soft) !important;
   color: var(--chk-brass) !important;
 }
@@ -1516,7 +1526,7 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
 
 .input-group-custom .input-icon {
   position: absolute;
-  left: 1rem;
+  left: 1.2rem;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
@@ -1543,7 +1553,7 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
 
 .phone-input-wrapper .input-icon {
   position: absolute;
-  left: 1rem;
+  left: 1.2rem;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
@@ -1551,10 +1561,73 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
 }
 
 .phone-number-input {
-  padding-left: 2.75rem !important;
+  padding-left: 3.05rem !important;
   min-height: 3rem;
   border-radius: var(--chk-radius-sm) !important;
   border: 1px solid rgba(26, 34, 32, 0.12) !important;
+}
+
+.chk-form-alert {
+  background: rgba(181, 74, 74, 0.1) !important;
+  color: var(--chk-ink) !important;
+  border-left: 4px solid #b54a4a !important;
+}
+
+.chk-dob-hint {
+  margin-top: -0.1rem;
+}
+
+.chk-dob-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+@media (max-width: 575.98px) {
+  .chk-dob-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chk-dob-part,
+.chk-gender-select {
+  min-height: 3rem;
+  border-radius: var(--chk-radius-sm) !important;
+  border: 1px solid rgba(26, 34, 32, 0.12) !important;
+  font-size: 0.9rem;
+  padding-left: 0.85rem;
+  padding-right: 0.65rem;
+  background: var(--chk-surface);
+  color: var(--chk-ink);
+  transition: border-color var(--chk-transition), box-shadow var(--chk-transition);
+}
+
+.chk-dob-part:focus,
+.chk-gender-select:focus {
+  border-color: var(--chk-accent) !important;
+  box-shadow: var(--chk-ring) !important;
+  outline: none;
+}
+
+.chk-gender-wrap {
+  position: relative;
+}
+
+.chk-gender-icon {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  color: var(--chk-ink-subtle);
+  pointer-events: none;
+  font-size: 0.95rem;
+}
+
+.chk-gender-select {
+  padding-left: 3rem !important;
+  appearance: auto;
 }
 
 .chk-combo {
@@ -1881,7 +1954,15 @@ h1, h2, h3, h4, .h1, .h2, .h3 {
 }
 
 .upgrade-card-inner .offer-badge {
-  margin: 0 1rem 1rem;
+  display: flex !important;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1rem !important;
+  margin: 0 1rem 1rem !important;
+}
+
+.upgrade-card-inner .offer-badge i {
+  flex-shrink: 0;
 }
 
 .upgrade-option-card:has(.upgrade-radio-input:checked) .upgrade-card-inner {

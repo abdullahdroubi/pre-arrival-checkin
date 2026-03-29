@@ -231,7 +231,8 @@ public class SupabaseService {
                 status = room.get("status").asText();
             }
             boolean isGuestCurrent = guestCurrentRoomId != null && roomId == guestCurrentRoomId;
-            if (!isGuestCurrent && !status.isEmpty() && !"available".equalsIgnoreCase(status)) {
+            // Upgrades: only explicitly available rooms (same hotel is enforced by fetch + roomBelongsToHotel).
+            if (!isGuestCurrent && !"available".equalsIgnoreCase(status)) {
                 continue;
             }
             if (bookedByOthers.contains(roomId)) {
@@ -265,6 +266,9 @@ public class SupabaseService {
 
         List<RoomUpgradeRow> rows = new ArrayList<>();
         for (JsonNode room : available) {
+            if (!roomBelongsToHotel(room, hotelId)) {
+                continue;
+            }
             int roomId = room.get("id").asInt();
             int roomTypeId = room.has("room_type_id") && !room.get("room_type_id").isNull()
                     ? room.get("room_type_id").asInt()
