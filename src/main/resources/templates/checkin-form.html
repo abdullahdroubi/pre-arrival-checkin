@@ -103,7 +103,7 @@
                         <label class="chk-saas-label" id="label-owner-dob">
                             Date of birth <span class="chk-saas-req" aria-hidden="true">*</span>
                         </label>
-                        <p class="chk-saas-hint">Owner must be 18 or older.</p>
+                        <p class="chk-saas-hint">Owner must be 18 or older. Pick year, then month, then day.</p>
                         <div class="chk-dob-picker chk-saas-dob"
                              id="ownerDobPicker"
                              data-min-age="18"
@@ -113,6 +113,12 @@
                             <div class="chk-dob-card chk-saas-dob-card">
                                 <div class="chk-dob-grid chk-saas-dob-grid">
                                     <div class="chk-dob-field">
+                                        <span class="chk-dob-field-label" id="owner-dob-y-l">Year</span>
+                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="year" aria-labelledby="owner-dob-y-l">
+                                            <option value="">Choose…</option>
+                                        </select>
+                                    </div>
+                                    <div class="chk-dob-field">
                                         <span class="chk-dob-field-label" id="owner-dob-m-l">Month</span>
                                         <select class="form-select chk-dob-part chk-saas-input" data-dob-part="month" aria-labelledby="owner-dob-m-l">
                                             <option value="">Choose…</option>
@@ -121,12 +127,6 @@
                                     <div class="chk-dob-field">
                                         <span class="chk-dob-field-label" id="owner-dob-d-l">Day</span>
                                         <select class="form-select chk-dob-part chk-saas-input" data-dob-part="day" aria-labelledby="owner-dob-d-l">
-                                            <option value="">Choose…</option>
-                                        </select>
-                                    </div>
-                                    <div class="chk-dob-field">
-                                        <span class="chk-dob-field-label" id="owner-dob-y-l">Year</span>
-                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="year" aria-labelledby="owner-dob-y-l">
                                             <option value="">Choose…</option>
                                         </select>
                                     </div>
@@ -292,15 +292,20 @@
             const m = parseInt(monthSel.value, 10);
             const prev = daySel.value;
             daySel.innerHTML = '<option value="">Choose day…</option>';
-            if (!y || !m) {
-                return;
+            // No month yet: still list 1–31 so the day control works on first open; month/year change will narrow invalid combos
+            var dim;
+            if (!m) {
+                dim = 31;
+            } else {
+                var dimYear = (Number.isFinite(y) && y > 0) ? y : 2000;
+                dim = chkDaysInMonth(dimYear, m);
             }
-            const dim = chkDaysInMonth(y, m);
-            for (let d = 1; d <= dim; d++) {
+            for (var d = 1; d <= dim; d++) {
                 daySel.appendChild(new Option(String(d), String(d)));
             }
-            if (prev && parseInt(prev, 10) <= dim) {
-                daySel.value = prev;
+            var pv = prev ? parseInt(prev, 10) : NaN;
+            if (Number.isFinite(pv) && pv >= 1 && pv <= dim) {
+                daySel.value = String(pv);
             }
         }
 
@@ -335,6 +340,8 @@
             refreshDays();
             daySel.value = String(parts[2]);
             syncHidden();
+        } else {
+            refreshDays();
         }
     };
 
@@ -405,16 +412,16 @@
                             <div class="chk-dob-card chk-saas-dob-card">
                                 <div class="chk-dob-grid chk-saas-dob-grid">
                                     <div class="chk-dob-field">
+                                        <span class="chk-dob-field-label">Year</span>
+                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="year" aria-label="Birth year"><option value="">Choose…</option></select>
+                                    </div>
+                                    <div class="chk-dob-field">
                                         <span class="chk-dob-field-label">Month</span>
                                         <select class="form-select chk-dob-part chk-saas-input" data-dob-part="month" aria-label="Birth month"><option value="">Choose…</option></select>
                                     </div>
                                     <div class="chk-dob-field">
                                         <span class="chk-dob-field-label">Day</span>
                                         <select class="form-select chk-dob-part chk-saas-input" data-dob-part="day" aria-label="Birth day"><option value="">Choose…</option></select>
-                                    </div>
-                                    <div class="chk-dob-field">
-                                        <span class="chk-dob-field-label">Year</span>
-                                        <select class="form-select chk-dob-part chk-saas-input" data-dob-part="year" aria-label="Birth year"><option value="">Choose…</option></select>
                                     </div>
                                 </div>
                             </div>
