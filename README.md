@@ -1,16 +1,23 @@
 # e_smart_check_in
 
-A new Flutter project.
+Pre-arrival guest check-in **web application** (Spring Boot), deployed with Docker (e.g. Render).
 
-## Getting Started
+The **PMS Flutter client** lives in a separate project (e.g. `pms-test`); it is not in this repository.
 
-This project is a starting point for a Flutter application.
+## Check-in app
 
-A few resources to get you started if this is your first Flutter project:
+- **Backend / UI:** Java 17, Thymeleaf — `src/`, `pom.xml`
+- **Deploy:** `Dockerfile`, `render.yaml`
+- **Edge functions:** `supabase/functions/` (TypeScript)
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Build locally:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+./mvnw clean package -DskipTests
+```
+
+Run the JAR from `target/` or use your IDE Spring Boot run configuration.
+
+## Environment
+
+Configure Supabase and public URL variables as required for your environment (see `render.yaml` and application configuration).
